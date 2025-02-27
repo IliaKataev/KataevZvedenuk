@@ -1,7 +1,7 @@
 # Use Case
 ## **Диаграмма прецедентов**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/957b86a4c7de889a2f2b3ca9d41105448389f97c/use%20case/Usecasediagram1.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/91e10d0bdd5fe7b41919e4c2816f8218f65385a6/use%20case/Usecasediagram1.png)
 
 ## **Общее описание**
 
