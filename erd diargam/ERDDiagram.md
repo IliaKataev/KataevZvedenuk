@@ -1,7 +1,7 @@
 # ER Diagram
 ## **ER Диаграмма**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/499d82076e75b567177da2c2ccc937017b02ec33/erd%20diargam/erd.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/83cb611cd258f7669ecbfa7ae810097bf6c63dbc/erd%20diargam/%D0%B5%D1%80%D0%B4.png)
 
 ---
 
