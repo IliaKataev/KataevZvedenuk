@@ -1,7 +1,7 @@
 # Диаграмма классов
 ## **Диаграмма классов**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/fc98b9347ba5920f115131832bee8e4887bc2d00/class%20diagram/classdiagram9.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/5199622ba7f5e5e461ef97bb7d2e362bf8bf1b8c/class%20diagram/classdiagram10.png)
 
 ---
 
