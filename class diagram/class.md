@@ -288,5 +288,5 @@
 31. `AuthController → AuthService` — Агрегация
 32. `AuthService → AuthSession` — Агрегация
 33. `AuthService → UserRepository` — Агрегация
-
+34. `ApplicationRepository → ApplicationStatus` - Ассоциация
 ---
