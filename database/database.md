@@ -1,6 +1,6 @@
 # **БД**
 
-![]()
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/3a20894c91a11a2b016ccc89a824366892da1672/database/database2.png)
 
 ---
 
