@@ -42,6 +42,7 @@ namespace gos.app
                 .AddScoped<CivilServantForm>()
                 .AddScoped<AuthController>()
                 .AddScoped<CitizenController>()
+                .AddScoped<AdminController>()
                 .BuildServiceProvider();
 
             ApplicationConfiguration.Initialize();

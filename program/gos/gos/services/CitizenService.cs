@@ -21,6 +21,9 @@ namespace gos.services
         Task CancelApplicationAsync(int applicationId);
         Task<List<Service>> GetAvailableServicesAsync();
         Task<List<ParameterType>> GetServiceRequirementsAsync(int serviceId);
+        Task<List<ParameterType>> GetParameterTypesAsync();
+
+
     }
 
     public class CitizenService : ICitizenService
@@ -61,6 +64,12 @@ namespace gos.services
             return $"Имя: {user.FullName}, Логин: {user.Login}";
         }
 
+        public async Task<List<ParameterType>> GetParameterTypesAsync()
+        {
+            return await _parameterTypeRepository.GetAllAsync();
+        }
+
+
         public async Task<List<Parameter>> GetParametersAsync()
         {
             var user = _authSession.CurrentUser ?? throw new UnauthorizedAccessException();
@@ -73,9 +82,9 @@ namespace gos.services
 
             var param = new Parameter
             {
-                UserId = user.Id,
                 TypeId = parameterDTO.TypeId,
-                Value = parameterDTO.Value
+                Value = parameterDTO.Value,
+                UserId = user.Id,
             };
 
             await _parameterRepository.AddAsync(param);

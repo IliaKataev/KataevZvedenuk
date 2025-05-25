@@ -38,10 +38,40 @@ namespace gos.controllers
 
         // Заглушки
         public string LoadPersonalData() => throw new NotImplementedException();
+
+        public async Task<List<ParameterTypeDTO>> LoadParameterTypesAsync()
+        {
+            var types = await _citizenService.GetParameterTypesAsync();
+            return types.Select(t => new ParameterTypeDTO
+            {
+                Id = t.Id,
+                Name = t.Name
+            }).ToList();
+        }
+
         public List<ParameterDTO> LoadParameters() => throw new NotImplementedException();
-        public ParameterDTO AddParameter(int typeId, string value) => throw new NotImplementedException();
-        public void UpdateParameter(int parameterId, string newValue) => throw new NotImplementedException();
-        public void DeleteParameter(int parameterId) => throw new NotImplementedException();
+        public async Task AddParameterAsync(int typeId, string value)
+        {
+            var dto = new ParameterDTO
+            {
+                TypeId = typeId,
+                Value = value
+            };
+            await _citizenService.AddParameterAsync(dto);
+        }
+        public async Task UpdateParameterAsync(int parameterId, int typeId, string value)
+        {
+            var dto = new ParameterDTO
+            {
+                TypeId = typeId,
+                Value = value
+            };
+            await _citizenService.UpdateParameterAsync(parameterId, dto);
+        }
+        public async Task DeleteParameterAsync(int parameterId)
+        {
+            await _citizenService.DeleteParameterAsync(parameterId);
+        }
         public List<ServiceDTO> LoadAvailableServices() => throw new NotImplementedException();
         public List<ParameterTypeDTO> LoadServiceRequirements(int serviceId) => throw new NotImplementedException();
         public ApplicationDTO CreateNewApplication(int serviceId) => throw new NotImplementedException();

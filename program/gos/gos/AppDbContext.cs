@@ -28,7 +28,7 @@ public partial class AppDbContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            // ❌ УДАЛИТЬ: устаревшая ручная настройка enum
+            //ьУДАЛИТЬ: устаревшая ручная настройка enum
             // NpgsqlConnection.GlobalTypeMapper.EnableUnmappedTypes();
             // NpgsqlConnection.GlobalTypeMapper.MapEnum<UserRole>("public.user_role");
 

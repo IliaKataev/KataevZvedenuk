@@ -28,12 +28,59 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Text = "AdminForm";
+            label1 = new Label();
+            buttonAddUser = new Button();
+            buttonAddPT = new Button();
+            SuspendLayout();
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(12, 9);
+            label1.Name = "label1";
+            label1.Size = new Size(150, 20);
+            label1.TabIndex = 0;
+            label1.Text = "Добро пожаловать, ";
+            // 
+            // buttonAddUser
+            // 
+            buttonAddUser.Location = new Point(12, 385);
+            buttonAddUser.Name = "buttonAddUser";
+            buttonAddUser.Size = new Size(226, 53);
+            buttonAddUser.TabIndex = 1;
+            buttonAddUser.Text = "Добавить пользователя";
+            buttonAddUser.UseVisualStyleBackColor = true;
+            buttonAddUser.Click += buttonAddUser_Click;
+            // 
+            // buttonAddPT
+            // 
+            buttonAddPT.Location = new Point(568, 385);
+            buttonAddPT.Name = "buttonAddPT";
+            buttonAddPT.Size = new Size(220, 53);
+            buttonAddPT.TabIndex = 2;
+            buttonAddPT.Text = "Добавить тип параметра";
+            buttonAddPT.UseVisualStyleBackColor = true;
+            buttonAddPT.Click += buttonAddPT_Click;
+            // 
+            // AdminForm
+            // 
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(800, 450);
+            Controls.Add(buttonAddPT);
+            Controls.Add(buttonAddUser);
+            Controls.Add(label1);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            Name = "AdminForm";
+            Text = "AdminForm";
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
+
+        private Label label1;
+        private Button buttonAddUser;
+        private Button buttonAddPT;
     }
 }

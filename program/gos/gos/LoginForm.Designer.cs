@@ -101,6 +101,7 @@
             Controls.Add(label2);
             Controls.Add(txtLogin);
             Controls.Add(label1);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
             Name = "LoginForm";
             Text = "LoginForm";
             ResumeLayout(false);
