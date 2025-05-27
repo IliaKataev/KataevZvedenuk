@@ -79,6 +79,26 @@ namespace gos.controllers
             await _adminService.ReplaceAllParameterTypesAsync(updatedDtos);
         }
 
+        public async Task ReplaceAllServicesAsync(List<ServiceDTO> servicesDTO)
+        {
+            // Здесь создаем DTO с учетом существующих Id (если нужно, получаем текущие из БД)
+            var existingDtos = await _adminService.GetAllServicesAsync();
+
+            var updatedDtos = servicesDTO.Select((p, i) =>
+            {
+                var existing = existingDtos.ElementAtOrDefault(i);
+                return new ServiceDTO
+                {
+                    Id = existing?.Id ?? 0, // 0 - для новых
+                    Name = p.Name,
+                    Description = p.Description,
+                    ActivationDate = p.ActivationDate,
+                    DeactivationDate = p.DeactivationDate
+                };
+            }).ToList();
+
+            await _adminService.ReplaceAllServicesAsync(updatedDtos);
+        }
 
         public async Task DeleteParameterTypeAsync(int id)
         {

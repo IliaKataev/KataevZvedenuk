@@ -24,6 +24,8 @@ namespace gos.services
         Task DeleteParameterTypeAsync(int typeId);
         Task<User> CreateUserAsync(UserDTO userDTO);
         Task ReplaceAllParameterTypesAsync(List<ParameterTypeDTO> updatedDtos);
+        Task ReplaceAllServicesAsync(List<ServiceDTO> updatedDtos);
+
     }
 
     public class AdminService : IAdminService
@@ -227,6 +229,53 @@ namespace gos.services
             {
                 await _parameterTypeRepository.DeleteAsync(entityToDelete.Id);
             }
+        }
+
+
+
+        public async Task ReplaceAllServicesAsync(List<ServiceDTO> updatedDtos)
+        {
+            var existingEntities = await _serviceRepository.GetAllAsync();
+
+            foreach (var dto in updatedDtos)
+            {
+                if (dto.Id == 0)
+                {
+                    // Новый элемент — создаём
+                    var newEntity = new Service
+                    {
+                        Name = dto.Name,
+                        Description = dto.Description,
+                        ActivationDate = dto.ActivationDate
+                    };
+                    await _serviceRepository.AddAsync(newEntity);
+                }
+                else
+                {
+                    // Существующий элемент — обновляем
+                    var existing = existingEntities.FirstOrDefault(e => e.Id == dto.Id);
+                    if (existing != null)
+                    {
+                        existing.Name = dto.Name;
+                        existing.Description = dto.Description;
+                        // ActivationDate не меняем
+                        await _serviceRepository.UpdateAsync(existing);
+                    }
+                    else
+                    {
+                        // Если Id не найден — добавляем как новый
+                        var newEntity = new Service
+                        {
+                            Name = dto.Name,
+                            Description = dto.Description,
+                            ActivationDate = dto.ActivationDate
+                        };
+                        await _serviceRepository.AddAsync(newEntity);
+                    }
+                }
+            }
+
+            // ❌ НЕ УДАЛЯЕМ услуги и ❌ НЕ УДАЛЯЕМ правила
         }
 
 
