@@ -32,7 +32,7 @@ public partial class AppDbContext : DbContext
             // NpgsqlConnection.GlobalTypeMapper.EnableUnmappedTypes();
             // NpgsqlConnection.GlobalTypeMapper.MapEnum<UserRole>("public.user_role");
 
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=gosuslugi;Username=postgres;Password=1111");
+            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=gosuslugi;Username=postgres;Password=12345");
         }
     }
 

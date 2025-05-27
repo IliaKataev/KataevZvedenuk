@@ -113,7 +113,7 @@ namespace gos
         {
             using (Form editForm = new Form())
             {
-                editForm.Text = "Редактирование персональных данных";
+                editForm.Text = "Добавление нового типа параметра";
                 editForm.FormBorderStyle = FormBorderStyle.FixedDialog;
                 editForm.StartPosition = FormStartPosition.CenterParent;
                 editForm.ClientSize = new Size(400, 200);
@@ -142,11 +142,12 @@ namespace gos
                     string name = txtName.Text.Trim();
                     string type = txtType.Text;
 
-                    if (string.IsNullOrWhiteSpace(name))
+                    if (string.IsNullOrWhiteSpace(name) & string.IsNullOrWhiteSpace(type))
                     {
-                        MessageBox.Show("ФИО не может быть пустым.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show("Название и тип не может быть пустым", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
+
 
                     AddParameterType(type, name);
                 }
@@ -158,7 +159,7 @@ namespace gos
             try
             {
                 await _adminController.CreateParameterType(type, name);
-                MessageBox.Show("Пользователь успешно добавлен.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Параметр успешно добавлен.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {

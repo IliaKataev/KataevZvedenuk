@@ -16,8 +16,7 @@ namespace gos.services
         Task<Service> CreateServiceAsync(ServiceDTO serviceDTO);
         Task<Service> UpdateServiceAsync(ServiceDTO serviceDTO);
         Task<List<Rule>> GetRulesForServiceAsync(int serviceId);
-        Task AddRuleToServiceAsync(int serviceId, Rule rule);
-        Task<Rule> AddRuleAsync(RuleDTO ruleDTO);
+        Task AddRuleAsync(RuleDTO ruleDTO);
         Task UpdateRuleAsync(int ruleId, RuleDTO ruleDTO);
         Task DeleteRuleAsync(int ruleId);
         Task<List<ParameterType>> GetParameterTypesAsync();
@@ -91,13 +90,14 @@ namespace gos.services
             return await _ruleRepository.GetByServiceIdAsync(serviceId);  // Получаем правила для услуги
         }
 
-        public async Task AddRuleToServiceAsync(int serviceId, Rule rule)
+        //НЕ ПОНЯТНО ЗАЧЕМ ЭТОТ МЕТОД
+        /*public async Task AddRuleToServiceAsync(int serviceId, Rule rule)
         {
             rule.ServiceId = serviceId;
             await _ruleRepository.AddAsync(rule);
-        }
+        }*/
 
-        public async Task<Rule> AddRuleAsync(RuleDTO ruleDTO)
+        public async Task AddRuleAsync(RuleDTO ruleDTO)
         {
             var rule = new Rule
             {
@@ -108,7 +108,6 @@ namespace gos.services
             };
 
             await _ruleRepository.AddAsync(rule);
-            return rule;
         }
 
         public async Task UpdateRuleAsync(int ruleId, RuleDTO ruleDTO)
