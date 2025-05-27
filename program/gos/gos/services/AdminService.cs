@@ -19,11 +19,11 @@ namespace gos.services
         Task AddRuleAsync(RuleDTO ruleDTO);
         Task UpdateRuleAsync(int ruleId, RuleDTO ruleDTO);
         Task DeleteRuleAsync(int ruleId);
-        Task<List<ParameterType>> GetParameterTypesAsync();
+        Task<List<ParameterTypeDTO>> GetParameterTypesAsync();
         Task<ParameterType> CreateParameterTypeAsync(ParameterTypeDTO parameterTypeDTO);
-        Task UpdateParameterTypeAsync(int typeId, ParameterTypeDTO parameterTypeDTO);
         Task DeleteParameterTypeAsync(int typeId);
         Task<User> CreateUserAsync(UserDTO userDTO);
+        Task ReplaceAllParameterTypesAsync(List<ParameterTypeDTO> updatedDtos);
     }
 
     public class AdminService : IAdminService
@@ -127,9 +127,18 @@ namespace gos.services
             await _ruleRepository.DeleteAsync(ruleId);
         }
 
-        public async Task<List<ParameterType>> GetParameterTypesAsync()
+        public async Task<List<ParameterTypeDTO>> GetParameterTypesAsync()
         {
-            return await _parameterTypeRepository.GetAllAsync();
+            var parameterTypes = await _parameterTypeRepository.GetAllAsync();
+
+            return parameterTypes
+                .Select(pt => new ParameterTypeDTO
+                {
+                    Id = pt.Id,
+                    Type = pt.Type,
+                    Name = pt.Name
+                })
+                .ToList();
         }
 
         public async Task<ParameterType> CreateParameterTypeAsync(ParameterTypeDTO parameterTypeDTO)
@@ -144,16 +153,59 @@ namespace gos.services
             return parameterType;
         }
 
-        public async Task UpdateParameterTypeAsync(int typeId, ParameterTypeDTO parameterTypeDTO)
+        public async Task ReplaceAllParameterTypesAsync(List<ParameterTypeDTO> updatedDtos)
         {
-            var parameterType = await _parameterTypeRepository.GetByIdAsync(typeId);
-            if (parameterType == null) throw new ArgumentException("Parameter type not found.");
+            // Получаем все текущие типы из репозитория
+            var existingEntities = await _parameterTypeRepository.GetAllAsync();
 
-            parameterType.Type = parameterTypeDTO.Type;
-            parameterType.Name = parameterTypeDTO.Name;
+            // 1. Обновляем и добавляем новые
+            foreach (var dto in updatedDtos)
+            {
+                if (dto.Id == 0)
+                {
+                    // Новый элемент — создаём
+                    var newEntity = new ParameterType
+                    {
+                        Name = dto.Name,
+                        Type = dto.Type
+                    };
+                    await _parameterTypeRepository.AddAsync(newEntity);
+                }
+                else
+                {
+                    // Существующий элемент — обновляем
+                    var existing = existingEntities.FirstOrDefault(e => e.Id == dto.Id);
+                    if (existing != null)
+                    {
+                        existing.Name = dto.Name;
+                        existing.Type = dto.Type;
+                        await _parameterTypeRepository.UpdateAsync(existing);
+                    }
+                    else
+                    {
+                        // Если Id не найден, можно добавить или бросить ошибку (зависит от логики)
+                        // Например, добавим как новый:
+                        var newEntity = new ParameterType
+                        {
+                            Name = dto.Name,
+                            Type = dto.Type
+                        };
+                        await _parameterTypeRepository.AddAsync(newEntity);
+                    }
+                }
+            }
 
-            await _parameterTypeRepository.UpdateAsync(parameterType);
+            // 2. Удаляем отсутствующие (те, у кого Id нет в updatedDtos)
+            var updatedIds = updatedDtos.Where(d => d.Id != 0).Select(d => d.Id).ToHashSet();
+
+            var toDelete = existingEntities.Where(e => !updatedIds.Contains(e.Id)).ToList();
+
+            foreach (var entityToDelete in toDelete)
+            {
+                await _parameterTypeRepository.DeleteAsync(entityToDelete.Id);
+            }
         }
+
 
         public async Task DeleteParameterTypeAsync(int typeId)
         {

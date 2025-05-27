@@ -53,5 +53,38 @@ namespace gos.controllers
             await _adminService.CreateParameterTypeAsync(_parType);
         }
 
+        public async Task<List<ParameterTypeDTO>> GetParameterTypesAsync()
+        {
+            return await _adminService.GetParameterTypesAsync(); // теперь всё корректно
+        }
+
+        // Пример метода в контроллере (вызов из формы):
+        public async Task ReplaceAllParameterTypesAsync(List<(string Name, string Type)> parameters)
+        {
+            // Здесь создаем DTO с учетом существующих Id (если нужно, получаем текущие из БД)
+            var existingDtos = await _adminService.GetParameterTypesAsync();
+
+            var updatedDtos = parameters.Select((p, i) =>
+            {
+                var existing = existingDtos.ElementAtOrDefault(i);
+                return new ParameterTypeDTO
+                {
+                    Id = existing?.Id ?? 0, // 0 - для новых
+                    Name = p.Name,
+                    Type = p.Type
+                };
+            }).ToList();
+
+            await _adminService.ReplaceAllParameterTypesAsync(updatedDtos);
+        }
+
+
+        public async Task DeleteParameterTypeAsync(int id)
+        {
+            await _adminService.DeleteParameterTypeAsync(id);
+        }
+
+
+
     }
 }

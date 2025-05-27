@@ -1,5 +1,6 @@
 ﻿using gos.controllers;
 using gos.models;
+using gos.models.DTO;
 using Microsoft.VisualBasic.Logging;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace gos
 {
@@ -109,65 +111,118 @@ namespace gos
             }
         }
 
-        private void buttonAddPT_Click(object sender, EventArgs e)
+        private async void buttonAddPT_Click(object sender, EventArgs e)
         {
             using (Form editForm = new Form())
             {
-                editForm.Text = "Добавление нового типа параметра";
+                editForm.Text = "Тип параметра";
                 editForm.FormBorderStyle = FormBorderStyle.FixedDialog;
                 editForm.StartPosition = FormStartPosition.CenterParent;
-                editForm.ClientSize = new Size(400, 200);
+                editForm.ClientSize = new Size(600, 400);
                 editForm.MaximizeBox = false;
                 editForm.MinimizeBox = false;
                 editForm.ShowInTaskbar = false;
 
-                // Тип
-                Label lblType = new Label() { Text = "Тип:", Left = 20, Top = 20, AutoSize = true };
-                TextBox txtType = new TextBox() { Left = 100, Top = 20, Width = 250 };
+                var listBoxTP = new ListBox() { Left = 20, Top = 20, Height = 200, Width = 550 };
+                var txtName = new TextBox() { Left = 20, Top = 240, Width = 250 };
+                var txtType = new TextBox() { Left = 280, Top = 240, Width = 150 };
+                var btnAdd = new Button() { Text = "Добавить", Left = 440, Top = 240, Enabled = false };
+                var btnDelete = new Button() { Text = "Удалить", Left = 440, Top = 280, Enabled = false };
+                var btnSave = new Button() { Text = "Сохранить и закрыть", Left = 230, Top = 330, DialogResult = DialogResult.OK };
 
-                // Наименование
-                Label lblName = new Label() { Text = "Название:", Left = 20, Top = 60, AutoSize = true };
-                TextBox txtName = new TextBox() { Left = 100, Top = 60, Width = 250};
+                editForm.Controls.AddRange(new Control[] { listBoxTP, txtName, txtType, btnAdd, btnDelete, btnSave });
 
-                // Кнопки
-                Button btnOk = new Button() { Text = "Сохранить", Left = 100, Top = 110, DialogResult = DialogResult.OK, AutoSize = true };
-                Button btnCancel = new Button() { Text = "Отмена", Left = 200, Top = 110, DialogResult = DialogResult.Cancel, AutoSize = true };
+                // Получаем DTO из контроллера
+                var dtos = (await _adminController.GetParameterTypesAsync()).ToList();
 
-                editForm.Controls.AddRange(new Control[] { lblName, txtName, lblType, txtType, btnOk, btnCancel });
-                editForm.AcceptButton = btnOk;
-                editForm.CancelButton = btnCancel;
+                // Создаем список кортежей с Name и Type (без Id)
+                List<(string Name, string Type)> parameters = dtos
+                    .Select(d => (d.Name, d.Type))
+                    .ToList();
+
+                listBoxTP.Items.AddRange(parameters.Select(p => p.Name).ToArray());
+
+                void UpdateAddButton()
+                {
+                    btnAdd.Enabled = !string.IsNullOrWhiteSpace(txtName.Text) &&
+                                     !string.IsNullOrWhiteSpace(txtType.Text) &&
+                                     listBoxTP.SelectedIndex < 0;
+                }
+
+                listBoxTP.SelectedIndexChanged += (s, ev) =>
+                {
+                    int idx = listBoxTP.SelectedIndex;
+                    if (idx >= 0)
+                    {
+                        var selected = parameters[idx];
+                        txtName.Text = selected.Name;
+                        txtType.Text = selected.Type;
+                        btnDelete.Enabled = true;
+                        btnAdd.Enabled = false;
+                    }
+                    else
+                    {
+                        txtName.Text = "";
+                        txtType.Text = "";
+                        btnDelete.Enabled = false;
+                        btnAdd.Enabled = false;
+                    }
+                };
+
+                txtName.TextChanged += (s, ev) => UpdateAddButton();
+                txtType.TextChanged += (s, ev) => UpdateAddButton();
+
+                btnAdd.Click += (s, ev) =>
+                {
+                    if (!string.IsNullOrWhiteSpace(txtName.Text) && !string.IsNullOrWhiteSpace(txtType.Text))
+                    {
+                        parameters.Add((txtName.Text.Trim(), txtType.Text.Trim()));
+                        listBoxTP.Items.Add(txtName.Text.Trim());
+                        txtName.Clear();
+                        txtType.Clear();
+                    }
+                };
+
+                btnDelete.Click += (s, ev) =>
+                {
+                    int idx = listBoxTP.SelectedIndex;
+                    if (idx >= 0)
+                    {
+                        parameters.RemoveAt(idx);
+                        listBoxTP.Items.RemoveAt(idx);
+                        txtName.Clear();
+                        txtType.Clear();
+                    }
+                };
+
+                btnSave.Click += async (s, ev) =>
+                {
+                    // Здесь вызываем контроллер, передавая DTO, которые он сформирует сам из параметров
+                    await SaveParameterTypesThroughController(parameters);
+                };
 
                 if (editForm.ShowDialog(this) == DialogResult.OK)
                 {
-                    string name = txtName.Text.Trim();
-                    string type = txtType.Text;
-
-                    if (string.IsNullOrWhiteSpace(name) & string.IsNullOrWhiteSpace(type))
-                    {
-                        MessageBox.Show("Название и тип не может быть пустым", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
-
-
-                    AddParameterType(type, name);
+                    // Можно тут тоже сохранить, если btnSave не нажали
+                    await SaveParameterTypesThroughController(parameters);
                 }
             }
         }
 
-        private async Task AddParameterType(string type, string name)
+        // Метод для передачи параметров контроллеру, где уже формируются DTO и сохраняются
+        private async Task SaveParameterTypesThroughController(List<(string Name, string Type)> parameters)
         {
             try
             {
-                await _adminController.CreateParameterType(type, name);
-                MessageBox.Show("Параметр успешно добавлен.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                // Передаем список в контроллер — контроллер создаст DTO и обновит через сервис
+                await _adminController.ReplaceAllParameterTypesAsync(parameters);
+                MessageBox.Show("Список успешно обновлён.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
-                string errorMessage = $"Ошибка при обновлении: {ex.Message}";
+                string errorMessage = $"Ошибка при сохранении: {ex.Message}";
                 if (ex.InnerException != null)
-                {
                     errorMessage += $"\nВнутреннее исключение: {ex.InnerException.Message}";
-                }
 
                 MessageBox.Show(errorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

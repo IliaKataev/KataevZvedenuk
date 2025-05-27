@@ -54,11 +54,11 @@
             // 
             // buttonAddPT
             // 
-            buttonAddPT.Location = new Point(568, 385);
+            buttonAddPT.Location = new Point(568, 9);
             buttonAddPT.Name = "buttonAddPT";
             buttonAddPT.Size = new Size(220, 53);
             buttonAddPT.TabIndex = 2;
-            buttonAddPT.Text = "Добавить тип параметра";
+            buttonAddPT.Text = "Тип параметра";
             buttonAddPT.UseVisualStyleBackColor = true;
             buttonAddPT.Click += buttonAddPT_Click;
             // 
