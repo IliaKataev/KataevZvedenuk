@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace gos.controllers
 {
@@ -120,8 +121,14 @@ namespace gos.controllers
             await _adminService.CreateServiceAsync(serviceDto);
         }
 
+        public async Task AddRuleAsync(RuleDTO ruleDTO)
+        {
+            await _adminService.AddRuleAsync(ruleDTO);
+        }
 
-
-
+        public async Task DeleteRuleAsync(int ruleId)
+        {
+            await _adminService.DeleteRuleAsync(ruleId);
+        }
     }
 }

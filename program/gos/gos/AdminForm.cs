@@ -274,15 +274,16 @@ namespace gos
         {
             using (Form editForm = new Form())
             {
-                editForm.Text = "Редактирование услуг";
+                editForm.Text = "Редактирование услуг и правил";
                 editForm.FormBorderStyle = FormBorderStyle.FixedDialog;
                 editForm.StartPosition = FormStartPosition.CenterParent;
-                editForm.ClientSize = new Size(700, 500);
+                editForm.ClientSize = new Size(1000, 500);
                 editForm.MaximizeBox = false;
                 editForm.MinimizeBox = false;
                 editForm.ShowInTaskbar = false;
 
                 var listBoxServices = new ListBox() { Left = 20, Top = 20, Width = 300, Height = 300 };
+                var listBoxRules = new ListBox() { Left = 340, Top = 180, Width = 620, Height = 180 };
 
                 var labelName = new Label() { Text = "Название услуги:", Left = 340, Top = 30, AutoSize = true };
                 var textBoxName = new TextBox() { Left = 460, Top = 28, Width = 200 };
@@ -290,29 +291,76 @@ namespace gos
                 var labelDesc = new Label() { Text = "Описание:", Left = 340, Top = 70, AutoSize = true };
                 var textBoxDesc = new TextBox() { Left = 460, Top = 68, Width = 200 };
 
-                var btnAdd = new Button() { Text = "Добавить", Left = 460, Top = 110, Width = 100, Enabled = false };
-                var btnUpdate = new Button() { Text = "Обновить", Left = 560, Top = 110, Width = 100, Enabled = false };
-                var btnDelete = new Button() { Text = "Удалить", Left = 460, Top = 150, Width = 200, Enabled = false };
-                var btnSave = new Button() { Text = "Сохранить и закрыть", Left = 250, Top = 400, Width = 200, DialogResult = DialogResult.OK };
+                var btnUpdate = new Button() { Text = "Обновить", Left = 680, Top = 28, Width = 100, Enabled = false };
+
+                var btnAddRule = new Button() { Text = "Добавить правило", Left = 340, Top = 380, Width = 150, Enabled = false };
+                var btnEditRule = new Button() { Text = "Изменить правило", Left = 500, Top = 380, Width = 150, Enabled = false };
+                var btnDeleteRule = new Button() { Text = "Удалить правило", Left = 660, Top = 380, Width = 150, Enabled = false };
+
+                var btnSave = new Button() { Text = "Сохранить и закрыть", Left = 400, Top = 430, Width = 200, DialogResult = DialogResult.OK };
+
+                var labelRuleValue = new Label() { Text = "Значение:", Left = 340, Top = 420, AutoSize = true, Visible = false };
+                var textBoxRuleValue = new TextBox() { Left = 400, Top = 418, Width = 100, Visible = false };
+
+                var labelOperator = new Label() { Text = "Оператор:", Left = 510, Top = 420, AutoSize = true, Visible = false };
+                var comboBoxOperator = new ComboBox() { Left = 580, Top = 418, Width = 80, DropDownStyle = ComboBoxStyle.DropDownList, Visible = false };
+                comboBoxOperator.Items.AddRange(new string[] { "=", "<", ">", "<=", ">=", "!=" });
+
+                var labelRuleType = new Label() { Text = "Тип:", Left = 670, Top = 420, AutoSize = true, Visible = false };
+                var comboBoxParameterTypes = new ComboBox()
+                {
+                    Left = 460,
+                    Top = 128,
+                    Width = 200,
+                    DropDownStyle = ComboBoxStyle.DropDownList,
+                    DisplayMember = "Name",
+                    ValueMember = "Id"
+                };
+
+                var btnSaveRule = new Button() { Text = "Сохранить правило", Left = 800, Top = 415, Width = 150, Visible = false };
+
 
                 editForm.Controls.AddRange(new Control[]
                 {
-            listBoxServices, labelName, textBoxName, labelDesc, textBoxDesc,
-            btnAdd, btnUpdate, btnDelete, btnSave
+                    listBoxServices, listBoxRules, labelName, textBoxName, labelDesc, textBoxDesc,
+                    btnUpdate, btnAddRule, btnEditRule, btnDeleteRule, btnSave,
+                    labelRuleValue, textBoxRuleValue, labelOperator, comboBoxOperator, labelRuleType, comboBoxParameterTypes, btnSaveRule
+
                 });
 
-                var services = (await _adminController.GetAllServicesAsync()).ToList();
+                var parameterTypes = (await _adminController.GetParameterTypesAsync()).ToList();
+                comboBoxParameterTypes.DataSource = parameterTypes;
 
+
+                var services = (await _adminController.GetAllServicesAsync()).ToList();
                 listBoxServices.Items.AddRange(services.Select(s => s.Name).ToArray());
 
-                void UpdateButtons()
+                async Task RefreshRulesForSelectedService()
                 {
-                    bool hasText = !string.IsNullOrWhiteSpace(textBoxName.Text) && !string.IsNullOrWhiteSpace(textBoxDesc.Text);
-                    btnAdd.Enabled = hasText && listBoxServices.SelectedIndex < 0;
-                    btnUpdate.Enabled = hasText && listBoxServices.SelectedIndex >= 0;
+                    listBoxRules.Items.Clear();
+                    btnAddRule.Enabled = btnEditRule.Enabled = btnDeleteRule.Enabled = false;
+
+                    if (listBoxServices.SelectedIndex >= 0)
+                    {
+                        int selectedServiceId = services[listBoxServices.SelectedIndex].Id;
+                        var rules = (await _adminController.GetRulesForServiceAsync(selectedServiceId)).ToList();
+
+                        foreach (var r in rules)
+                            listBoxRules.Items.Add($"{r.ComparisonOperator} {r.Value} (TypeId: {r.NeededTypeId})");
+
+                        listBoxRules.Tag = rules;
+                        btnAddRule.Enabled = true;
+                    }
                 }
 
-                listBoxServices.SelectedIndexChanged += (s, ev) =>
+                void UpdateServiceButtons()
+                {
+                    btnUpdate.Enabled = !string.IsNullOrWhiteSpace(textBoxName.Text)
+                                     && !string.IsNullOrWhiteSpace(textBoxDesc.Text)
+                                     && listBoxServices.SelectedIndex >= 0;
+                }
+
+                listBoxServices.SelectedIndexChanged += async (s, ev) =>
                 {
                     int idx = listBoxServices.SelectedIndex;
                     if (idx >= 0)
@@ -320,40 +368,24 @@ namespace gos
                         var selected = services[idx];
                         textBoxName.Text = selected.Name;
                         textBoxDesc.Text = selected.Description;
-                        btnDelete.Enabled = true;
                     }
                     else
                     {
                         textBoxName.Clear();
                         textBoxDesc.Clear();
-                        btnDelete.Enabled = false;
                     }
-                    UpdateButtons();
+
+                    UpdateServiceButtons();
+                    await RefreshRulesForSelectedService();
                 };
 
-                textBoxName.TextChanged += (s, ev) => UpdateButtons();
-                textBoxDesc.TextChanged += (s, ev) => UpdateButtons();
-
-                btnAdd.Click += (s, ev) =>
+                listBoxRules.SelectedIndexChanged += (s, ev) =>
                 {
-                    var name = textBoxName.Text.Trim();
-                    var desc = textBoxDesc.Text.Trim();
-
-                    var newService = new ServiceDTO
-                    {
-                        Id = 0,
-                        Name = name,
-                        Description = desc,
-                        ActivationDate = DateOnly.FromDateTime(DateTime.Today)
-                    };
-
-                    services.Add(newService);
-                    listBoxServices.Items.Add(name);
-
-                    textBoxName.Clear();
-                    textBoxDesc.Clear();
-                    listBoxServices.ClearSelected();
+                    btnEditRule.Enabled = btnDeleteRule.Enabled = listBoxRules.SelectedIndex >= 0;
                 };
+
+                textBoxName.TextChanged += (s, ev) => UpdateServiceButtons();
+                textBoxDesc.TextChanged += (s, ev) => UpdateServiceButtons();
 
                 btnUpdate.Click += (s, ev) =>
                 {
@@ -362,30 +394,99 @@ namespace gos
                     {
                         services[idx].Name = textBoxName.Text.Trim();
                         services[idx].Description = textBoxDesc.Text.Trim();
-
                         listBoxServices.Items[idx] = services[idx].Name;
-
-                        textBoxName.Clear();
-                        textBoxDesc.Clear();
-                        listBoxServices.ClearSelected();
                     }
                 };
 
-                btnDelete.Click += (s, ev) =>
+                btnAddRule.Click += (s, ev) =>
                 {
-                    int idx = listBoxServices.SelectedIndex;
+                    labelRuleValue.Visible = textBoxRuleValue.Visible =
+                    labelOperator.Visible = comboBoxOperator.Visible =
+                    labelRuleType.Visible = comboBoxParameterTypes.Visible =
+                    btnSaveRule.Visible = true;
+
+                    textBoxRuleValue.Text = "";
+                    comboBoxOperator.SelectedIndex = 0;
+                    comboBoxParameterTypes.SelectedValue = 0;
+                };
+
+                btnSaveRule.Click += async (s, ev) =>
+                {
+                    int serviceIdx = listBoxServices.SelectedIndex;
+                    if (serviceIdx < 0) return;
+
+                    if (string.IsNullOrWhiteSpace(textBoxRuleValue.Text) || comboBoxOperator.SelectedIndex < 0)
+                    {
+                        MessageBox.Show("Введите значение и выберите оператор!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    var newRule = new RuleDTO
+                    {
+                        ServiceId = services[serviceIdx].Id,
+                        Value = textBoxRuleValue.Text.Trim(),
+                        ComparisonOperator = comboBoxOperator.SelectedItem.ToString(),
+                        NeededTypeId = (int)comboBoxParameterTypes.SelectedValue
+                    };
+
+                    await _adminController.AddRuleAsync(newRule);
+
+                    labelRuleValue.Visible = textBoxRuleValue.Visible =
+                    labelOperator.Visible = comboBoxOperator.Visible =
+                    labelRuleType.Visible = comboBoxParameterTypes.Visible =
+                    btnSaveRule.Visible = false;
+
+                    await RefreshRulesForSelectedService();
+                };
+
+
+
+                btnEditRule.Click += (s, ev) =>
+                {
+                    int idx = listBoxRules.SelectedIndex;
+                    int serviceIdx = listBoxServices.SelectedIndex;
+                    if (idx >= 0 && serviceIdx >= 0)
+                    {
+                        var rules = (List<RuleDTO>)listBoxRules.Tag;
+                        var ruleToEdit = rules[idx];
+
+                        // Показываем панель редактирования с текущими значениями
+                        labelRuleValue.Visible = textBoxRuleValue.Visible =
+                        labelOperator.Visible = comboBoxOperator.Visible =
+                        labelRuleType.Visible = comboBoxParameterTypes.Visible =
+                        btnSaveRule.Visible = true;
+
+                        textBoxRuleValue.Text = ruleToEdit.Value;
+                        comboBoxOperator.SelectedItem = ruleToEdit.ComparisonOperator;
+                        comboBoxParameterTypes.SelectedValue = ruleToEdit.NeededTypeId;
+
+                        // Временно сохраняем редактируемое правило в Tag
+                        btnSaveRule.Tag = ruleToEdit;
+                    }
+                };
+
+
+                btnDeleteRule.Click += async (s, ev) =>
+                {
+                    int idx = listBoxRules.SelectedIndex;
                     if (idx >= 0)
                     {
-                        services.RemoveAt(idx);
-                        listBoxServices.Items.RemoveAt(idx);
-                        textBoxName.Clear();
-                        textBoxDesc.Clear();
+                        var rules = (List<RuleDTO>)listBoxRules.Tag;
+                        var ruleToDelete = rules[idx];
+
+                        var confirm = MessageBox.Show("Удалить выбранное правило?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                        if (confirm == DialogResult.Yes)
+                        {
+                            await _adminController.DeleteRuleAsync(ruleToDelete.Id);
+                            await RefreshRulesForSelectedService();
+                        }
                     }
                 };
+
 
                 btnSave.Click += async (s, ev) =>
                 {
-                    await _adminController.ReplaceAllServicesAsync(services);
+                    await _adminController.ReplaceAllServicesAsync(services); // если нужно — сохраняем услуги
                     editForm.Close();
                 };
 
@@ -395,7 +496,8 @@ namespace gos
 
 
 
-        private void buttonRule_Click(object sender, EventArgs e)
+
+        private void buttonRule_Click(int serviceId)
         {
             using (Form ruleForm = new Form())
             {
@@ -404,3 +506,5 @@ namespace gos
         }
     }
 }
+
+

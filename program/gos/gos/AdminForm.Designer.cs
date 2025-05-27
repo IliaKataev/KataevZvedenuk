@@ -73,7 +73,6 @@
             buttonRule.TabIndex = 3;
             buttonRule.Text = "Правила";
             buttonRule.UseVisualStyleBackColor = true;
-            buttonRule.Click += buttonRule_Click;
             // 
             // buttonService
             // 
