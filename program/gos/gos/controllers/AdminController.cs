@@ -55,6 +55,7 @@ namespace gos.controllers
 
         public async Task<List<ParameterTypeDTO>> GetParameterTypesAsync()
         {
+            
             return await _adminService.GetParameterTypesAsync(); // теперь всё корректно
         }
 
@@ -83,6 +84,22 @@ namespace gos.controllers
         {
             await _adminService.DeleteParameterTypeAsync(id);
         }
+
+        public async Task<List<ServiceDTO>> GetAllServicesAsync()
+        {
+            return await _adminService.GetAllServicesAsync();
+        }
+
+        public async Task<List<RuleDTO>> GetRulesForServiceAsync(int serviceId)
+        {
+            return await _adminService.GetRulesForServiceAsync(serviceId);
+        }
+
+        public async Task SaveServiceAsync(ServiceDTO serviceDto)
+        {
+            await _adminService.CreateServiceAsync(serviceDto);
+        }
+
 
 
 

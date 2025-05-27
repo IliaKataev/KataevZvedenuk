@@ -72,6 +72,4 @@ namespace gos.repositories
         }
 
     }
-
-
 }

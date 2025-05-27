@@ -124,7 +124,7 @@ namespace gos
                 editForm.ShowInTaskbar = false;
 
                 var listBoxTP = new ListBox() { Left = 20, Top = 20, Height = 180, Width = 540 };
-                Label lblName = new Label() { Text = "Название параметра:", Left = 20, Top = 220, AutoSize = true};
+                Label lblName = new Label() { Text = "Название параметра:", Left = 20, Top = 220, AutoSize = true };
                 TextBox txtName = new TextBox() { Left = 210, Top = 218, Width = 220 };
                 Label lblType = new Label() { Text = "Тип значения:", Left = 20, Top = 260, AutoSize = true };
                 TextBox txtType = new TextBox() { Left = 210, Top = 258, Width = 220 };
@@ -248,7 +248,7 @@ namespace gos
                 }*/
 
                 editForm.ShowDialog(this);
-            }   
+            }
         }
 
         // Метод для передачи параметров контроллеру, где уже формируются DTO и сохраняются
@@ -270,6 +270,137 @@ namespace gos
             }
         }
 
-        
+        private async void buttonService_Click(object sender, EventArgs e)
+        {
+            using (Form editForm = new Form())
+            {
+                editForm.Text = "Редактирование услуг";
+                editForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+                editForm.StartPosition = FormStartPosition.CenterParent;
+                editForm.ClientSize = new Size(700, 500);
+                editForm.MaximizeBox = false;
+                editForm.MinimizeBox = false;
+                editForm.ShowInTaskbar = false;
+
+                var listBoxServices = new ListBox() { Left = 20, Top = 20, Width = 300, Height = 300 };
+
+                var labelName = new Label() { Text = "Название услуги:", Left = 340, Top = 30, AutoSize = true };
+                var textBoxName = new TextBox() { Left = 460, Top = 28, Width = 200 };
+
+                var labelDesc = new Label() { Text = "Описание:", Left = 340, Top = 70, AutoSize = true };
+                var textBoxDesc = new TextBox() { Left = 460, Top = 68, Width = 200 };
+
+                var btnAdd = new Button() { Text = "Добавить", Left = 460, Top = 110, Width = 100, Enabled = false };
+                var btnUpdate = new Button() { Text = "Обновить", Left = 560, Top = 110, Width = 100, Enabled = false };
+                var btnDelete = new Button() { Text = "Удалить", Left = 460, Top = 150, Width = 200, Enabled = false };
+                var btnSave = new Button() { Text = "Сохранить и закрыть", Left = 250, Top = 400, Width = 200, DialogResult = DialogResult.OK };
+
+                editForm.Controls.AddRange(new Control[]
+                {
+            listBoxServices, labelName, textBoxName, labelDesc, textBoxDesc,
+            btnAdd, btnUpdate, btnDelete, btnSave
+                });
+
+                var services = (await _adminController.GetAllServicesAsync()).ToList();
+
+                listBoxServices.Items.AddRange(services.Select(s => s.Name).ToArray());
+
+                void UpdateButtons()
+                {
+                    bool hasText = !string.IsNullOrWhiteSpace(textBoxName.Text) && !string.IsNullOrWhiteSpace(textBoxDesc.Text);
+                    btnAdd.Enabled = hasText && listBoxServices.SelectedIndex < 0;
+                    btnUpdate.Enabled = hasText && listBoxServices.SelectedIndex >= 0;
+                }
+
+                listBoxServices.SelectedIndexChanged += (s, ev) =>
+                {
+                    int idx = listBoxServices.SelectedIndex;
+                    if (idx >= 0)
+                    {
+                        var selected = services[idx];
+                        textBoxName.Text = selected.Name;
+                        textBoxDesc.Text = selected.Description;
+                        btnDelete.Enabled = true;
+                    }
+                    else
+                    {
+                        textBoxName.Clear();
+                        textBoxDesc.Clear();
+                        btnDelete.Enabled = false;
+                    }
+                    UpdateButtons();
+                };
+
+                textBoxName.TextChanged += (s, ev) => UpdateButtons();
+                textBoxDesc.TextChanged += (s, ev) => UpdateButtons();
+
+                btnAdd.Click += (s, ev) =>
+                {
+                    var name = textBoxName.Text.Trim();
+                    var desc = textBoxDesc.Text.Trim();
+
+                    var newService = new ServiceDTO
+                    {
+                        Id = 0,
+                        Name = name,
+                        Description = desc,
+                        ActivationDate = DateOnly.FromDateTime(DateTime.Today)
+                    };
+
+                    services.Add(newService);
+                    listBoxServices.Items.Add(name);
+
+                    textBoxName.Clear();
+                    textBoxDesc.Clear();
+                    listBoxServices.ClearSelected();
+                };
+
+                btnUpdate.Click += (s, ev) =>
+                {
+                    int idx = listBoxServices.SelectedIndex;
+                    if (idx >= 0)
+                    {
+                        services[idx].Name = textBoxName.Text.Trim();
+                        services[idx].Description = textBoxDesc.Text.Trim();
+
+                        listBoxServices.Items[idx] = services[idx].Name;
+
+                        textBoxName.Clear();
+                        textBoxDesc.Clear();
+                        listBoxServices.ClearSelected();
+                    }
+                };
+
+                btnDelete.Click += (s, ev) =>
+                {
+                    int idx = listBoxServices.SelectedIndex;
+                    if (idx >= 0)
+                    {
+                        services.RemoveAt(idx);
+                        listBoxServices.Items.RemoveAt(idx);
+                        textBoxName.Clear();
+                        textBoxDesc.Clear();
+                    }
+                };
+
+                btnSave.Click += async (s, ev) =>
+                {
+                    await _adminController.ReplaceAllServicesAsync(services);
+                    editForm.Close();
+                };
+
+                editForm.ShowDialog(this);
+            }
+        }
+
+
+
+        private void buttonRule_Click(object sender, EventArgs e)
+        {
+            using (Form ruleForm = new Form())
+            {
+
+            }
+        }
     }
 }

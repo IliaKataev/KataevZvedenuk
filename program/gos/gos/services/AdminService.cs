@@ -12,10 +12,10 @@ namespace gos.services
     public interface IAdminService
     {
         //bool IsAdmin();
-        Task<List<Service>> GetAllServicesAsync();
+        Task<List<ServiceDTO>> GetAllServicesAsync();
         Task<Service> CreateServiceAsync(ServiceDTO serviceDTO);
         Task<Service> UpdateServiceAsync(ServiceDTO serviceDTO);
-        Task<List<Rule>> GetRulesForServiceAsync(int serviceId);
+        Task<List<RuleDTO>> GetRulesForServiceAsync(int serviceId);
         Task AddRuleAsync(RuleDTO ruleDTO);
         Task UpdateRuleAsync(int ruleId, RuleDTO ruleDTO);
         Task DeleteRuleAsync(int ruleId);
@@ -54,9 +54,19 @@ namespace gos.services
             return _authSession.CurrentUser?.Role == UserRole.ADMIN;
         }*/
 
-        public async Task<List<Service>> GetAllServicesAsync()
+        public async Task<List<ServiceDTO>> GetAllServicesAsync()
         {
-            return await _serviceRepository.GetAllAsync();  // Получаем все услуги через сервисный репозиторий
+            var services = await _serviceRepository.GetAllAsync();
+            return services
+                .Select(pt => new ServiceDTO
+                {
+                    Id = pt.Id,
+                    Description = pt.Description,
+                    Name = pt.Name,
+                    ActivationDate = pt.ActivationDate,
+                })
+                .ToList();
+              // Получаем все услуги через сервисный репозиторий
         }
 
         public async Task<Service> CreateServiceAsync(ServiceDTO serviceDTO)
@@ -85,9 +95,22 @@ namespace gos.services
             return service;
         }
 
-        public async Task<List<Rule>> GetRulesForServiceAsync(int serviceId)
+        public async Task<List<RuleDTO>> GetRulesForServiceAsync(int serviceId)
         {
-            return await _ruleRepository.GetByServiceIdAsync(serviceId);  // Получаем правила для услуги
+            var rules = await _ruleRepository.GetByServiceIdAsync(serviceId);
+
+            return rules
+                .Select(pt => new RuleDTO
+                {
+                    Id = pt.Id,
+                    ServiceId = serviceId,
+                    Value = pt.Value,
+                    ComparisonOperator = pt.ComparisonOperator,
+                    NeededTypeId = pt.NeededTypeId,
+                })
+                .ToList();
+
+            // Получаем правила для услуги
         }
 
         //НЕ ПОНЯТНО ЗАЧЕМ ЭТОТ МЕТОД
