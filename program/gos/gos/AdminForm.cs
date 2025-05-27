@@ -123,14 +123,17 @@ namespace gos
                 editForm.MinimizeBox = false;
                 editForm.ShowInTaskbar = false;
 
-                var listBoxTP = new ListBox() { Left = 20, Top = 20, Height = 200, Width = 550 };
-                var txtName = new TextBox() { Left = 20, Top = 240, Width = 250 };
-                var txtType = new TextBox() { Left = 280, Top = 240, Width = 150 };
-                var btnAdd = new Button() { Text = "Добавить", Left = 440, Top = 240, Enabled = false };
-                var btnDelete = new Button() { Text = "Удалить", Left = 440, Top = 280, Enabled = false };
-                var btnSave = new Button() { Text = "Сохранить и закрыть", Left = 230, Top = 330, DialogResult = DialogResult.OK };
+                var listBoxTP = new ListBox() { Left = 20, Top = 20, Height = 180, Width = 540 };
+                Label lblName = new Label() { Text = "Название параметра:", Left = 20, Top = 220, AutoSize = true};
+                TextBox txtName = new TextBox() { Left = 210, Top = 218, Width = 220 };
+                Label lblType = new Label() { Text = "Тип значения:", Left = 20, Top = 260, AutoSize = true };
+                TextBox txtType = new TextBox() { Left = 210, Top = 258, Width = 220 };
+                var btnAdd = new Button() { Text = "Добавить", Left = 440, Top = 215, Width = 110, Height = 40, Enabled = false };
+                var btnUpdate = new Button() { Text = "Обновить", Left = 440, Top = 255, Width = 110, Height = 40, Enabled = false };
+                var btnDelete = new Button() { Text = "Удалить", Left = 440, Top = 295, Width = 110, Height = 40, Enabled = false };
+                var btnSave = new Button() { Text = "Сохранить и закрыть", Left = 200, Top = 340, Width = 200, Height = 40, DialogResult = DialogResult.OK };
 
-                editForm.Controls.AddRange(new Control[] { listBoxTP, txtName, txtType, btnAdd, btnDelete, btnSave });
+                editForm.Controls.AddRange(new Control[] { listBoxTP, lblName, txtName, lblType, txtType, btnAdd, btnUpdate, btnDelete, btnSave });
 
                 // Получаем DTO из контроллера
                 var dtos = (await _adminController.GetParameterTypesAsync()).ToList();
@@ -147,6 +150,15 @@ namespace gos
                     btnAdd.Enabled = !string.IsNullOrWhiteSpace(txtName.Text) &&
                                      !string.IsNullOrWhiteSpace(txtType.Text) &&
                                      listBoxTP.SelectedIndex < 0;
+                }
+
+                //при изменении кнопки изменить тип 
+                void UpdateUpdateButton()
+                {
+                    int idx = listBoxTP.SelectedIndex;
+                    btnUpdate.Enabled = idx >= 0 &&
+                                        !string.IsNullOrWhiteSpace(txtName.Text) &&
+                                        !string.IsNullOrWhiteSpace(txtType.Text);
                 }
 
                 listBoxTP.SelectedIndexChanged += (s, ev) =>
@@ -169,8 +181,17 @@ namespace gos
                     }
                 };
 
-                txtName.TextChanged += (s, ev) => UpdateAddButton();
-                txtType.TextChanged += (s, ev) => UpdateAddButton();
+                txtName.TextChanged += (s, ev) =>
+                {
+                    UpdateAddButton();
+                    UpdateUpdateButton();
+                };
+
+                txtType.TextChanged += (s, ev) =>
+                {
+                    UpdateAddButton();
+                    UpdateUpdateButton();
+                };
 
                 btnAdd.Click += (s, ev) =>
                 {
@@ -180,6 +201,23 @@ namespace gos
                         listBoxTP.Items.Add(txtName.Text.Trim());
                         txtName.Clear();
                         txtType.Clear();
+                    }
+                };
+
+                btnUpdate.Click += (s, ev) =>
+                {
+                    int idx = listBoxTP.SelectedIndex;
+                    if (idx >= 0)
+                    {
+                        var name = txtName.Text.Trim();
+                        var type = txtType.Text.Trim();
+                        parameters[idx] = (name, type);
+                        listBoxTP.Items[idx] = name;
+                        txtName.Clear();
+                        txtType.Clear();
+                        listBoxTP.ClearSelected();
+                        btnUpdate.Enabled = false;
+                        btnDelete.Enabled = false;
                     }
                 };
 
@@ -199,13 +237,17 @@ namespace gos
                 {
                     // Здесь вызываем контроллер, передавая DTO, которые он сформирует сам из параметров
                     await SaveParameterTypesThroughController(parameters);
+                    editForm.Close();
                 };
 
-                if (editForm.ShowDialog(this) == DialogResult.OK)
+                // дважды вызывается один и тот же метод одновременно
+                /*if (editForm.ShowDialog(this) == DialogResult.OK)
                 {
                     // Можно тут тоже сохранить, если btnSave не нажали
                     await SaveParameterTypesThroughController(parameters);
-                }
+                }*/
+
+                editForm.ShowDialog(this);
             }
         }
 
