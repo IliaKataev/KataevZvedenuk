@@ -248,7 +248,7 @@ namespace gos
                 }*/
 
                 editForm.ShowDialog(this);
-            }
+            }   
         }
 
         // Метод для передачи параметров контроллеру, где уже формируются DTO и сохраняются
@@ -269,5 +269,7 @@ namespace gos
                 MessageBox.Show(errorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        
     }
 }
