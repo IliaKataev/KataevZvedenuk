@@ -236,7 +236,7 @@ namespace gos
                 btnSave.Click += async (s, ev) =>
                 {
                     // Здесь вызываем контроллер, передавая DTO, которые он сформирует сам из параметров
-                    await SaveParameterTypesThroughController(parameters);
+                    await SaveParameterTypes(parameters);
                     editForm.Close();
                 };
 
@@ -252,7 +252,7 @@ namespace gos
         }
 
         // Метод для передачи параметров контроллеру, где уже формируются DTO и сохраняются
-        private async Task SaveParameterTypesThroughController(List<(string Name, string Type)> parameters)
+        private async Task SaveParameterTypes(List<(string Name, string Type)> parameters)
         {
             try
             {
@@ -298,7 +298,7 @@ namespace gos
                 var btnDeleteRule = new Button() { Text = "Удалить правило", Left = 660, Top = 380, Width = 150, Enabled = false };
 
                 var btnSave = new Button() { Text = "Сохранить и закрыть", Left = 400, Top = 430, Width = 200, DialogResult = DialogResult.OK };
-
+                var btnAddService = new Button() { Text = "Добавить услугу", Left = 680, Top = 68, Width = 100 };
                 var labelRuleValue = new Label() { Text = "Значение:", Left = 340, Top = 420, AutoSize = true, Visible = false };
                 var textBoxRuleValue = new TextBox() { Left = 400, Top = 418, Width = 100, Visible = false };
 
@@ -324,8 +324,8 @@ namespace gos
                 {
                     listBoxServices, listBoxRules, labelName, textBoxName, labelDesc, textBoxDesc,
                     btnUpdate, btnAddRule, btnEditRule, btnDeleteRule, btnSave,
-                    labelRuleValue, textBoxRuleValue, labelOperator, comboBoxOperator, labelRuleType, comboBoxParameterTypes, btnSaveRule
-
+                    labelRuleValue, textBoxRuleValue, labelOperator, comboBoxOperator, 
+                    labelRuleType, comboBoxParameterTypes, btnSaveRule, btnAddService
                 });
 
                 var parameterTypes = (await _adminController.GetParameterTypesAsync()).ToList();
@@ -346,7 +346,11 @@ namespace gos
                         var rules = (await _adminController.GetRulesForServiceAsync(selectedServiceId)).ToList();
 
                         foreach (var r in rules)
-                            listBoxRules.Items.Add($"{r.ComparisonOperator} {r.Value} (TypeId: {r.NeededTypeId})");
+                        {
+                            var type = parameterTypes.FirstOrDefault(p => p.Id == r.NeededTypeId);
+                            string typeName = type?.Name ?? $"TypeId: {r.NeededTypeId}";
+                            listBoxRules.Items.Add($"{typeName} {r.ComparisonOperator} {r.Value}");
+                        }
 
                         listBoxRules.Tag = rules;
                         btnAddRule.Enabled = true;
@@ -386,6 +390,22 @@ namespace gos
 
                 textBoxName.TextChanged += (s, ev) => UpdateServiceButtons();
                 textBoxDesc.TextChanged += (s, ev) => UpdateServiceButtons();
+
+                btnAddService.Click += (s, ev) =>
+                {
+                    var newService = new ServiceDTO
+                    {
+                        Id = 0, // пусть будет 0, если потом понадобится присваивать Id на сервере
+                        Name = "Новая услуга",
+                        Description = "",
+                        ActivationDate = DateOnly.FromDateTime(DateTime.Now)
+                    };
+
+                    services.Add(newService);
+                    listBoxServices.Items.Add(newService.Name);
+                    listBoxServices.SelectedIndex = listBoxServices.Items.Count - 1;
+                };
+
 
                 btnUpdate.Click += (s, ev) =>
                 {
