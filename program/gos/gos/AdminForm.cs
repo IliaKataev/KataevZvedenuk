@@ -322,7 +322,7 @@ namespace gos
 
                 var btnUpdate = new Button() { Text = "Обновить услугу", Left = 700, Top = 28, Width = 220, Height = 40, Enabled = false };
                 var btnAddService = new Button() { Text = "Добавить услугу", Left = 700, Top = 68, Width = 220, Height = 40 };
-                var btnDeactService = new Button() { Text = "Деактивировать услугу", Left = 700, Top = 108, Width = 220, Height = 40 };
+                var btnDeactService = new Button() { Text = "Деактивировать услугу", Left = 700, Top = 108, Width = 220, Height = 40, Enabled = false };
 
                 var btnAddRule = new Button() { Text = "Добавить правило", Left = 340, Top = 350, Width = 220, Height = 40, Enabled = false };
                 var btnEditRule = new Button() { Text = "Изменить правило", Left = 560, Top = 350, Width = 220, Height = 40, Enabled = false };
@@ -423,6 +423,7 @@ namespace gos
                         textBoxDesc.Text = selected.Description;
                         btnCancelService.Enabled = true;
                         btnUpdate.Enabled = true;
+                        btnDeactService.Enabled = true;
                     }
                     else
                     {
@@ -533,6 +534,9 @@ namespace gos
                         textBoxDesc.Clear();
 
                         listBoxRules.ClearSelected();
+                        btnAddRule.Enabled = false;
+                        btnCancelService.Enabled = false;
+                        btnDeactService.Enabled = false;
                     }
                 };
 
