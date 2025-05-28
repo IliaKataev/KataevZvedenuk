@@ -367,7 +367,12 @@ namespace gos
 
                 var services = (await _adminController.GetAllServicesAsync()).ToList();
 
-                listBoxServices.Items.AddRange(services.Select(s => s.Name).ToArray());
+                listBoxServices.Items.AddRange(services
+                    .Select(s => s.DeactivationDate.HasValue
+                        ? $"{s.Name} (деактивировано {s.DeactivationDate.Value:dd.MM.yyyy})"
+                        : s.Name)
+                    .ToArray());
+
 
                 async Task RefreshRulesForSelectedService()
                 {
@@ -394,16 +399,16 @@ namespace gos
                 async Task RefreshServices()
                 {
                     listBoxServices.Items.Clear();
-
                     services = (await _adminController.GetAllServicesAsync()).ToList();
 
-                    foreach (var s in services)
-                        listBoxServices.Items.Add(s.Name);
+                    listBoxServices.Items.AddRange(services
+                        .Select(s => s.DeactivationDate.HasValue
+                            ? $"{s.Name} (деактивировано {s.DeactivationDate.Value:dd.MM.yyyy})"
+                            : s.Name)
+                        .ToArray());
 
                     if (services.Any())
-                    {
                         listBoxServices.SelectedIndex = 0;
-                    }
                 }
 
                 void UpdateServiceButtons()
@@ -525,6 +530,7 @@ namespace gos
                     if (idx >= 0)
                     {
                         services[idx].DeactivationDate = DateOnly.FromDateTime(DateTime.Today);
+                        textBoxName.Text += $" деактивирована: {services[idx].ToString()}";
                         MessageBox.Show("Услуга деактивирована");
 
                         await _adminController.ReplaceAllServicesAsync(services);

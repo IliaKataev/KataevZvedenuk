@@ -49,7 +49,17 @@ namespace gos.controllers
             }).ToList();
         }
 
-        public List<ParameterDTO> LoadParameters() => throw new NotImplementedException();
+        public async Task<List<ParameterDTO>> LoadParameters()
+        {
+            var parameters = await _citizenService.GetParametersAsync();
+            return parameters.Select(t => new ParameterDTO
+            {
+                Id = t.Id,
+                Value = t.Value,
+                TypeId = t.TypeId,
+
+            }).ToList();
+        }
         public async Task AddParameterAsync(int typeId, string value)
         {
             var dto = new ParameterDTO
@@ -72,10 +82,25 @@ namespace gos.controllers
         {
             await _citizenService.DeleteParameterAsync(parameterId);
         }
-        public List<ServiceDTO> LoadAvailableServices() => throw new NotImplementedException();
-        public List<ParameterTypeDTO> LoadServiceRequirements(int serviceId) => throw new NotImplementedException();
-        public ApplicationDTO CreateNewApplication(int serviceId) => throw new NotImplementedException();
-        public List<ApplicationDTO> ViewMyApplications() => throw new NotImplementedException();
-        public void CancelMyApplication(int applicationId) => throw new NotImplementedException();
+        public async Task<List<ServiceDTO>> LoadAvailableServices()
+        {
+            return await _citizenService.GetAvailableServicesAsync();
+        }
+        public async Task<List<ParameterTypeDTO>> LoadServiceRequirements(int serviceId)
+        {
+            return await _citizenService.GetServiceRequirementsAsync(serviceId);
+        }
+        public async Task CreateNewApplication(int userId, ApplicationDTO application)
+        {
+            await _applicationService.CreateNewApplicationAsync(userId, application);
+        }
+        public async Task<List<ApplicationDTO>> ViewMyApplications()
+        {
+            return await _citizenService.GetMyApplicationsAsync();
+        }
+        public async Task CancelMyApplication(int applicationId)
+        {
+            await _citizenService.CancelApplicationAsync(applicationId);
+        }
     }
 }

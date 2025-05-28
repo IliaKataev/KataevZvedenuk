@@ -8,6 +8,7 @@ namespace gos.models.DTO
 {
     public class ParameterDTO
     {
+        public int Id { get; set; }
         public int TypeId { get; set; }
         public string Value { get; set; } = null!;
     }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using gos.repositories;
+using Microsoft.VisualBasic.ApplicationServices;
 
 namespace gos.services
 {
@@ -17,10 +18,10 @@ namespace gos.services
         Task<Parameter> AddParameterAsync(ParameterDTO parameterDTO);
         Task UpdateParameterAsync(int parameterId, ParameterDTO parameterDTO);
         Task DeleteParameterAsync(int parameterId);
-        Task<List<models.Application>> GetMyApplicationsAsync();
+        Task<List<ApplicationDTO>> GetMyApplicationsAsync();
         Task CancelApplicationAsync(int applicationId);
-        Task<List<Service>> GetAvailableServicesAsync();
-        Task<List<ParameterType>> GetServiceRequirementsAsync(int serviceId);
+        Task<List<ServiceDTO>> GetAvailableServicesAsync();
+        Task<List<ParameterTypeDTO>> GetServiceRequirementsAsync(int serviceId);
         Task<List<ParameterType>> GetParameterTypesAsync();
 
 
@@ -107,10 +108,19 @@ namespace gos.services
             await _parameterRepository.DeleteAsync(parameterId);
         }
 
-        public async Task<List<models.Application>> GetMyApplicationsAsync()
+        public async Task<List<ApplicationDTO>> GetMyApplicationsAsync() //тут должны возвращаться DTOшки
         {
             var user = _authSession.CurrentUser ?? throw new UnauthorizedAccessException();
-            return await _applicationRepository.GetByUserIdAsync(user.Id);
+            var apps = await _applicationRepository.GetByUserIdAsync(user.Id);
+            return apps.Select(a => new ApplicationDTO
+            {
+                ApplicationId = a.Id,
+                UserId = a.UserId,
+                ServiceId = a.ServiceId,
+                Status = a.Status,
+                CreationDate = a.CreationDate,
+                Deadline = a.Deadline
+            }).ToList();
         }
 
         public async Task CancelApplicationAsync(int applicationId)
@@ -124,14 +134,37 @@ namespace gos.services
             await _applicationRepository.DeleteAsync(applicationId);
         }
 
-        public async Task<List<Service>> GetAvailableServicesAsync()
+        public async Task<List<ServiceDTO>> GetAvailableServicesAsync()
         {
-            return await _serviceRepository.GetAllAsync();
+            var allServices = await _serviceRepository.GetAllAsync();
+
+            var availableServices = allServices
+                .Where(service => service.DeactivationDate == null)
+                .Select(service => new ServiceDTO
+                {
+                    Id = service.Id,
+                    Name = service.Name,
+                    Description = service.Description,
+                    ActivationDate = service.ActivationDate,
+                    DeactivationDate = service.DeactivationDate // будет null
+                })
+                .ToList();
+
+            return availableServices;
         }
 
-        public async Task<List<ParameterType>> GetServiceRequirementsAsync(int serviceId)
+        public async Task<List<ParameterTypeDTO>> GetServiceRequirementsAsync(int serviceId)
         {
-            return await _parameterTypeRepository.GetByServiceIdAsync(serviceId);
+            var parameterTypes = await _parameterTypeRepository.GetByServiceIdAsync(serviceId);
+
+            var dtoList = parameterTypes.Select(pt => new ParameterTypeDTO
+            {
+                Id = pt.Id,
+                Type = pt.Type,
+                Name = pt.Name
+            }).ToList();
+
+            return dtoList;
         }
     }
 }

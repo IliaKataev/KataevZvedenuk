@@ -41,10 +41,11 @@ namespace gos.services
             {
                 UserId = userId,
                 ServiceId = applicationDTO.ServiceId,
-                Status = ApplicationStatus.IN_PROGRESS,
-                CreationDate = DateTime.Now,
+                Status = applicationDTO.Status,
+                CreationDate = applicationDTO.CreationDate,
                 ClosureDate = null,
-                Result = null
+                Result = null,
+                Deadline = applicationDTO.Deadline,
             };
 
             await _applicationRepository.AddAsync(application);

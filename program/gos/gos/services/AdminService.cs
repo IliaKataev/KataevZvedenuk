@@ -66,6 +66,7 @@ namespace gos.services
                     Description = pt.Description,
                     Name = pt.Name,
                     ActivationDate = pt.ActivationDate,
+                    DeactivationDate = pt.DeactivationDate,
                 })
                 .ToList();
               // Получаем все услуги через сервисный репозиторий
@@ -92,6 +93,7 @@ namespace gos.services
             service.Name = serviceDTO.Name;
             service.Description = serviceDTO.Description;
             service.ActivationDate = serviceDTO.ActivationDate;
+            service.DeactivationDate = serviceDTO.DeactivationDate;
 
             await _serviceRepository.UpdateAsync(service);
             return service;
@@ -246,7 +248,8 @@ namespace gos.services
                     {
                         Name = dto.Name,
                         Description = dto.Description,
-                        ActivationDate = dto.ActivationDate
+                        ActivationDate = dto.ActivationDate,
+                        DeactivationDate = dto.DeactivationDate
                     };
                     await _serviceRepository.AddAsync(newEntity);
                 }
@@ -258,6 +261,8 @@ namespace gos.services
                     {
                         existing.Name = dto.Name;
                         existing.Description = dto.Description;
+                        existing.DeactivationDate = dto.DeactivationDate;
+
                         // ActivationDate не меняем
                         await _serviceRepository.UpdateAsync(existing);
                     }
@@ -268,7 +273,8 @@ namespace gos.services
                         {
                             Name = dto.Name,
                             Description = dto.Description,
-                            ActivationDate = dto.ActivationDate
+                            ActivationDate = dto.ActivationDate,
+                            DeactivationDate = dto.DeactivationDate
                         };
                         await _serviceRepository.AddAsync(newEntity);
                     }

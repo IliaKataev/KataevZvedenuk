@@ -76,7 +76,8 @@ public partial class AppDbContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("creation_date");
-            entity.Property(e => e.Deadline).HasColumnName("deadline");
+            entity.Property(e => e.Deadline).HasColumnName("deadline")
+            .HasColumnType("timestamp without time zone");
             entity.Property(e => e.Result).HasColumnName("result");
             entity.Property(e => e.ServiceId).HasColumnName("service_id");
             entity.Property(e => e.UserId).HasColumnName("user_id");
@@ -88,6 +89,10 @@ public partial class AppDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.Applications)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("applications_user_id_fkey");
+            entity.Property(e => e.Status)
+                .HasColumnName("status")
+                .HasConversion<int>();
+
         });
 
         modelBuilder.Entity<Parameter>(entity =>
