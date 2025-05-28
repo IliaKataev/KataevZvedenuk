@@ -33,31 +33,33 @@ namespace gos
 
             lblError.Visible = false;
 
-            // Выполняем логин
-            var (isSuccess, userRole) = await _authController.Login(login, password);
+            var user = await _authController.Login(login, password);
 
-            if (isSuccess && userRole.HasValue)
+            if (user != null)
             {
-                Hide(); // Скрываем форму логина
+                Hide();
 
-                switch (userRole.Value)
+                switch (user.Role)
                 {
                     case UserRole.ADMIN:
-                        var adminForm = _serviceProvider.GetRequiredService<AdminForm>();
+                        var adminForm = ActivatorUtilities.CreateInstance<AdminForm>(_serviceProvider, user);
                         adminForm.Show();
                         break;
+
                     case UserRole.CIVILSERVANT:
-                        var civilServantForm = _serviceProvider.GetRequiredService<CivilServantForm>();
+                        var civilServantForm = ActivatorUtilities.CreateInstance<CivilServantForm>(_serviceProvider, user);
                         civilServantForm.Show();
                         break;
+
                     case UserRole.CITIZEN:
-                        var citizenForm = _serviceProvider.GetRequiredService<CitizenForm>();
+                        var citizenForm = ActivatorUtilities.CreateInstance<CitizenForm>(_serviceProvider, user);
                         citizenForm.Show();
                         break;
+
                     default:
                         lblError.Text = "Неизвестная роль пользователя.";
                         lblError.Visible = true;
-                        Show(); // Показываем снова форму
+                        Show();
                         break;
                 }
             }
@@ -67,6 +69,7 @@ namespace gos
                 lblError.Visible = true;
             }
         }
+
     }
 
 }

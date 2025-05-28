@@ -12,17 +12,29 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace gos
 {
     public partial class AdminForm : Form
     {
         private readonly AdminController _adminController;
-        public AdminForm(AdminController adminController)
+        private readonly UserDTO _currentUser;
+
+        public AdminForm(AdminController adminController, UserDTO currentUser)
         {
             InitializeComponent();
             _adminController = adminController;
+            _currentUser = currentUser;
+
+            this.Load += AdminForm_Load; // Подписка на событие загрузки формы
         }
+
+        private void AdminForm_Load(object sender, EventArgs e)
+        {
+            labelWelcome.Text = $"Добро пожаловать, {_currentUser.FullName}!";
+        }
+
 
         private void buttonAddUser_Click(object sender, EventArgs e)
         {
@@ -291,7 +303,7 @@ namespace gos
                 var labelDesc = new Label() { Text = "Описание:", Left = 340, Top = 70, AutoSize = true };
                 var textBoxDesc = new TextBox() { Left = 490, Top = 68, Width = 200 };
 
-                var btnUpdate = new Button() { Text = "Обновить услугу", Left = 700, Top = 28, Width = 220, Height = 40, Enabled = false,  };               
+                var btnUpdate = new Button() { Text = "Обновить услугу", Left = 700, Top = 28, Width = 220, Height = 40, Enabled = false, };
                 var btnAddService = new Button() { Text = "Добавить услугу", Left = 700, Top = 68, Width = 220, Height = 40, };
                 var btnDeactService = new Button() { Text = "Деактивировать услугу", Left = 700, Top = 108, Width = 220, Height = 40, };
 
@@ -299,7 +311,7 @@ namespace gos
                 var btnEditRule = new Button() { Text = "Изменить правило", Left = 560, Top = 350, Width = 220, Height = 40, Enabled = false };
                 var btnDeleteRule = new Button() { Text = "Удалить правило", Left = 760, Top = 350, Width = 220, Height = 40, Enabled = false };
 
-                var btnSave = new Button() { Text = "Сохранить и закрыть", Left = 560, Top = 540, Width = 220, Height = 40, DialogResult = DialogResult.OK};
+                var btnSave = new Button() { Text = "Сохранить и закрыть", Left = 560, Top = 540, Width = 220, Height = 40, DialogResult = DialogResult.OK };
 
                 var labelRuleValue = new Label() { Text = "Значение:", Left = 340, Top = 400, AutoSize = true, Visible = false };
                 var textBoxRuleValue = new TextBox() { Left = 470, Top = 400, Width = 150, Visible = false };

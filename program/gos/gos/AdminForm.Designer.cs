@@ -28,26 +28,26 @@
         /// </summary>
         private void InitializeComponent()
         {
-            label1 = new Label();
+            labelWelcome = new Label();
             buttonAddUser = new Button();
             buttonAddPT = new Button();
             buttonService = new Button();
             SuspendLayout();
             // 
-            // label1
+            // labelWelcome
             // 
-            label1.AutoSize = true;
-            label1.Location = new Point(15, 11);
-            label1.Margin = new Padding(4, 0, 4, 0);
-            label1.Name = "label1";
-            label1.Size = new Size(179, 25);
-            label1.TabIndex = 0;
-            label1.Text = "Добро пожаловать, ";
+            labelWelcome.AutoSize = true;
+            labelWelcome.Location = new Point(15, 11);
+            labelWelcome.Margin = new Padding(4, 0, 4, 0);
+            labelWelcome.Name = "labelWelcome";
+            labelWelcome.Size = new Size(179, 25);
+            labelWelcome.TabIndex = 0;
+            labelWelcome.Text = "Добро пожаловать, ";
             // 
             // buttonAddUser
             // 
             buttonAddUser.Location = new Point(15, 481);
-            buttonAddUser.Margin = new Padding(4, 4, 4, 4);
+            buttonAddUser.Margin = new Padding(4);
             buttonAddUser.Name = "buttonAddUser";
             buttonAddUser.Size = new Size(282, 66);
             buttonAddUser.TabIndex = 1;
@@ -58,7 +58,7 @@
             // buttonAddPT
             // 
             buttonAddPT.Location = new Point(710, 11);
-            buttonAddPT.Margin = new Padding(4, 4, 4, 4);
+            buttonAddPT.Margin = new Padding(4);
             buttonAddPT.Name = "buttonAddPT";
             buttonAddPT.Size = new Size(275, 66);
             buttonAddPT.TabIndex = 2;
@@ -85,9 +85,9 @@
             Controls.Add(buttonService);
             Controls.Add(buttonAddPT);
             Controls.Add(buttonAddUser);
-            Controls.Add(label1);
+            Controls.Add(labelWelcome);
             FormBorderStyle = FormBorderStyle.FixedDialog;
-            Margin = new Padding(4, 4, 4, 4);
+            Margin = new Padding(4);
             Name = "AdminForm";
             Text = "AdminForm";
             ResumeLayout(false);
@@ -96,7 +96,7 @@
 
         #endregion
 
-        private Label label1;
+        private Label labelWelcome;
         private Button buttonAddUser;
         private Button buttonAddPT;
         private Button buttonService;

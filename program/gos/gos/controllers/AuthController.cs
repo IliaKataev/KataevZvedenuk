@@ -1,4 +1,5 @@
 ﻿using gos.models;
+using gos.models.DTO;
 using gos.services;
 using System;
 using System.Collections.Generic;
@@ -18,21 +19,30 @@ namespace gos.controllers
             _authService = authService;
         }
 
-        public async Task<(bool isSuccess, UserRole? userRole)> Login(string login, string password)
+        public async Task<UserDTO?> Login(string login, string password)
         {
-            // Пытаемся авторизовать пользователя через сервис
             var user = await _authService.TryLoginAsync(login, password);
-
             if (user != null)
             {
-                _currentUser = user; // Сохраняем текущего пользователя
-                return (true, user.Role); // Возвращаем успешный вход и роль
+                _currentUser = user; // Сохраняем модель User
+                                     // Маппинг User в UserDTO:
+                var userDto = new UserDTO
+                {
+                    Id = user.Id,
+                    Login = user.Login,
+                    Role = user.Role,
+                    FullName = user.FullName,
+                    Password = user.Password
+                };
+                return userDto;
             }
             else
             {
-                return (false, null); // Неверный логин или пароль
+                return null;
             }
         }
+
+
 
         // Если нужно — можно очистить _currentUser в логике Logout
         public void Logout()
