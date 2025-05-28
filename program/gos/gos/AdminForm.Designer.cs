@@ -31,24 +31,25 @@
             label1 = new Label();
             buttonAddUser = new Button();
             buttonAddPT = new Button();
-            buttonRule = new Button();
             buttonService = new Button();
             SuspendLayout();
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(12, 9);
+            label1.Location = new Point(15, 11);
+            label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Size = new Size(150, 20);
+            label1.Size = new Size(179, 25);
             label1.TabIndex = 0;
             label1.Text = "Добро пожаловать, ";
             // 
             // buttonAddUser
             // 
-            buttonAddUser.Location = new Point(12, 385);
+            buttonAddUser.Location = new Point(15, 481);
+            buttonAddUser.Margin = new Padding(4, 4, 4, 4);
             buttonAddUser.Name = "buttonAddUser";
-            buttonAddUser.Size = new Size(226, 53);
+            buttonAddUser.Size = new Size(282, 66);
             buttonAddUser.TabIndex = 1;
             buttonAddUser.Text = "Добавить пользователя";
             buttonAddUser.UseVisualStyleBackColor = true;
@@ -56,30 +57,21 @@
             // 
             // buttonAddPT
             // 
-            buttonAddPT.Location = new Point(568, 9);
+            buttonAddPT.Location = new Point(710, 11);
+            buttonAddPT.Margin = new Padding(4, 4, 4, 4);
             buttonAddPT.Name = "buttonAddPT";
-            buttonAddPT.Size = new Size(220, 53);
+            buttonAddPT.Size = new Size(275, 66);
             buttonAddPT.TabIndex = 2;
             buttonAddPT.Text = "Тип параметра";
             buttonAddPT.UseVisualStyleBackColor = true;
             buttonAddPT.Click += buttonAddPT_Click;
             // 
-            // buttonRule
-            // 
-            buttonRule.Location = new Point(568, 130);
-            buttonRule.Margin = new Padding(2, 2, 2, 2);
-            buttonRule.Name = "buttonRule";
-            buttonRule.Size = new Size(222, 54);
-            buttonRule.TabIndex = 3;
-            buttonRule.Text = "Правила";
-            buttonRule.UseVisualStyleBackColor = true;
-            // 
             // buttonService
             // 
-            buttonService.Location = new Point(568, 67);
-            buttonService.Margin = new Padding(2, 2, 2, 2);
+            buttonService.Location = new Point(710, 84);
+            buttonService.Margin = new Padding(2);
             buttonService.Name = "buttonService";
-            buttonService.Size = new Size(220, 58);
+            buttonService.Size = new Size(275, 72);
             buttonService.TabIndex = 4;
             buttonService.Text = "Услуги";
             buttonService.UseVisualStyleBackColor = true;
@@ -87,15 +79,15 @@
             // 
             // AdminForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(1000, 562);
             Controls.Add(buttonService);
-            Controls.Add(buttonRule);
             Controls.Add(buttonAddPT);
             Controls.Add(buttonAddUser);
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
+            Margin = new Padding(4, 4, 4, 4);
             Name = "AdminForm";
             Text = "AdminForm";
             ResumeLayout(false);
@@ -107,7 +99,6 @@
         private Label label1;
         private Button buttonAddUser;
         private Button buttonAddPT;
-        private Button buttonRule;
         private Button buttonService;
     }
 }

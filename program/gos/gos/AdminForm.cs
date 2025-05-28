@@ -277,54 +277,56 @@ namespace gos
                 editForm.Text = "Редактирование услуг и правил";
                 editForm.FormBorderStyle = FormBorderStyle.FixedDialog;
                 editForm.StartPosition = FormStartPosition.CenterParent;
-                editForm.ClientSize = new Size(1000, 500);
+                editForm.ClientSize = new Size(1000, 600);
                 editForm.MaximizeBox = false;
                 editForm.MinimizeBox = false;
                 editForm.ShowInTaskbar = false;
 
-                var listBoxServices = new ListBox() { Left = 20, Top = 20, Width = 300, Height = 300 };
-                var listBoxRules = new ListBox() { Left = 340, Top = 180, Width = 620, Height = 180 };
+                var listBoxServices = new ListBox() { Left = 20, Top = 20, Width = 300, Height = 560 };
+                var listBoxRules = new ListBox() { Left = 340, Top = 120, Width = 620, Height = 180 };
 
                 var labelName = new Label() { Text = "Название услуги:", Left = 340, Top = 30, AutoSize = true };
-                var textBoxName = new TextBox() { Left = 460, Top = 28, Width = 200 };
+                var textBoxName = new TextBox() { Left = 490, Top = 28, Width = 200 };
 
                 var labelDesc = new Label() { Text = "Описание:", Left = 340, Top = 70, AutoSize = true };
-                var textBoxDesc = new TextBox() { Left = 460, Top = 68, Width = 200 };
+                var textBoxDesc = new TextBox() { Left = 490, Top = 68, Width = 200 };
 
-                var btnUpdate = new Button() { Text = "Обновить", Left = 680, Top = 28, Width = 100, Enabled = false };
+                var btnUpdate = new Button() { Text = "Обновить услугу", Left = 700, Top = 28, Width = 220, Height = 40, Enabled = false,  };               
+                var btnAddService = new Button() { Text = "Добавить услугу", Left = 700, Top = 68, Width = 220, Height = 40, };
 
-                var btnAddRule = new Button() { Text = "Добавить правило", Left = 340, Top = 380, Width = 150, Enabled = false };
-                var btnEditRule = new Button() { Text = "Изменить правило", Left = 500, Top = 380, Width = 150, Enabled = false };
-                var btnDeleteRule = new Button() { Text = "Удалить правило", Left = 660, Top = 380, Width = 150, Enabled = false };
+                var btnAddRule = new Button() { Text = "Добавить правило", Left = 340, Top = 310, Width = 220, Height = 40, Enabled = false };
+                var btnEditRule = new Button() { Text = "Изменить правило", Left = 560, Top = 310, Width = 220, Height = 40, Enabled = false };
+                var btnDeleteRule = new Button() { Text = "Удалить правило", Left = 760, Top = 310, Width = 220, Height = 40, Enabled = false };
 
-                var btnSave = new Button() { Text = "Сохранить и закрыть", Left = 400, Top = 430, Width = 200, DialogResult = DialogResult.OK };
-                var btnAddService = new Button() { Text = "Добавить услугу", Left = 680, Top = 68, Width = 100 };
-                var labelRuleValue = new Label() { Text = "Значение:", Left = 340, Top = 420, AutoSize = true, Visible = false };
-                var textBoxRuleValue = new TextBox() { Left = 400, Top = 418, Width = 100, Visible = false };
+                var btnSave = new Button() { Text = "Сохранить и закрыть", Left = 560, Top = 540, Width = 220, Height = 40, DialogResult = DialogResult.OK};
 
-                var labelOperator = new Label() { Text = "Оператор:", Left = 510, Top = 420, AutoSize = true, Visible = false };
-                var comboBoxOperator = new ComboBox() { Left = 580, Top = 418, Width = 80, DropDownStyle = ComboBoxStyle.DropDownList, Visible = false };
+                var labelRuleValue = new Label() { Text = "Значение:", Left = 340, Top = 360, AutoSize = true, Visible = false };
+                var textBoxRuleValue = new TextBox() { Left = 470, Top = 360, Width = 150, Visible = false };
+
+                var labelOperator = new Label() { Text = "Оператор:", Left = 340, Top = 400, AutoSize = true, Visible = false };
+                var comboBoxOperator = new ComboBox() { Left = 470, Top = 400, Width = 80, DropDownStyle = ComboBoxStyle.DropDownList, Visible = false };
                 comboBoxOperator.Items.AddRange(new string[] { "=", "<", ">", "<=", ">=", "!=" });
 
-                var labelRuleType = new Label() { Text = "Тип:", Left = 670, Top = 420, AutoSize = true, Visible = false };
+                var labelRuleType = new Label() { Text = "Тип:", Left = 340, Top = 440, AutoSize = true, Visible = false };
                 var comboBoxParameterTypes = new ComboBox()
                 {
-                    Left = 460,
-                    Top = 128,
+                    Left = 470,
+                    Top = 440,
                     Width = 200,
                     DropDownStyle = ComboBoxStyle.DropDownList,
                     DisplayMember = "Name",
-                    ValueMember = "Id"
+                    ValueMember = "Id",
+                    Visible = false
                 };
 
-                var btnSaveRule = new Button() { Text = "Сохранить правило", Left = 800, Top = 415, Width = 150, Visible = false };
+                var btnSaveRule = new Button() { Text = "Сохранить правило", Left = 800, Top = 415, Width = 220, Height = 40, Visible = false };
 
 
                 editForm.Controls.AddRange(new Control[]
                 {
                     listBoxServices, listBoxRules, labelName, textBoxName, labelDesc, textBoxDesc,
                     btnUpdate, btnAddRule, btnEditRule, btnDeleteRule, btnSave,
-                    labelRuleValue, textBoxRuleValue, labelOperator, comboBoxOperator, 
+                    labelRuleValue, textBoxRuleValue, labelOperator, comboBoxOperator,
                     labelRuleType, comboBoxParameterTypes, btnSaveRule, btnAddService
                 });
 
@@ -356,6 +358,22 @@ namespace gos
                         btnAddRule.Enabled = true;
                     }
                 }
+
+                async Task RefreshServices()
+                {
+                    listBoxServices.Items.Clear();
+
+                    services = (await _adminController.GetAllServicesAsync()).ToList();
+
+                    foreach (var s in services)
+                        listBoxServices.Items.Add(s.Name);
+
+                    if (services.Any())
+                    {
+                        listBoxServices.SelectedIndex = 0;
+                    }
+                }
+
 
                 void UpdateServiceButtons()
                 {
@@ -391,23 +409,32 @@ namespace gos
                 textBoxName.TextChanged += (s, ev) => UpdateServiceButtons();
                 textBoxDesc.TextChanged += (s, ev) => UpdateServiceButtons();
 
-                btnAddService.Click += (s, ev) =>
+                btnAddService.Click += async (s, ev) =>
                 {
                     var newService = new ServiceDTO
                     {
-                        Id = 0, // пусть будет 0, если потом понадобится присваивать Id на сервере
-                        Name = "Новая услуга",
-                        Description = "",
+                        Id = 0,
+                        Name = textBoxName.Text.Trim(),
+                        Description = textBoxDesc.Text.Trim(),
                         ActivationDate = DateOnly.FromDateTime(DateTime.Now)
                     };
 
                     services.Add(newService);
+
                     listBoxServices.Items.Add(newService.Name);
                     listBoxServices.SelectedIndex = listBoxServices.Items.Count - 1;
+
+                    await _adminController.ReplaceAllServicesAsync(services); // если нужно — сохраняем услуги
+
+                    await RefreshServices(); // обновляем локальный список и UI
+
+                    textBoxName.Text = "";
+                    textBoxDesc.Text = "";
+
                 };
 
 
-                btnUpdate.Click += (s, ev) =>
+                btnUpdate.Click += async (s, ev) =>
                 {
                     int idx = listBoxServices.SelectedIndex;
                     if (idx >= 0)
@@ -416,6 +443,17 @@ namespace gos
                         services[idx].Description = textBoxDesc.Text.Trim();
                         listBoxServices.Items[idx] = services[idx].Name;
                     }
+
+                    await _adminController.ReplaceAllServicesAsync(services); // если нужно — сохраняем услуги
+
+                    await RefreshServices();
+
+                    //сброс всего
+                    listBoxRules.SelectedIndex = -1;
+                    listBoxRules.SelectedItem = null;
+                    listBoxRules.SelectedValue = null;
+                    textBoxName.Text = "";
+                    textBoxDesc.Text = "";
                 };
 
                 btnAddRule.Click += (s, ev) =>
@@ -429,37 +467,6 @@ namespace gos
                     comboBoxOperator.SelectedIndex = 0;
                     comboBoxParameterTypes.SelectedValue = 0;
                 };
-
-                btnSaveRule.Click += async (s, ev) =>
-                {
-                    int serviceIdx = listBoxServices.SelectedIndex;
-                    if (serviceIdx < 0) return;
-
-                    if (string.IsNullOrWhiteSpace(textBoxRuleValue.Text) || comboBoxOperator.SelectedIndex < 0)
-                    {
-                        MessageBox.Show("Введите значение и выберите оператор!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return;
-                    }
-
-                    var newRule = new RuleDTO
-                    {
-                        ServiceId = services[serviceIdx].Id,
-                        Value = textBoxRuleValue.Text.Trim(),
-                        ComparisonOperator = comboBoxOperator.SelectedItem.ToString(),
-                        NeededTypeId = (int)comboBoxParameterTypes.SelectedValue
-                    };
-
-                    await _adminController.AddRuleAsync(newRule);
-
-                    labelRuleValue.Visible = textBoxRuleValue.Visible =
-                    labelOperator.Visible = comboBoxOperator.Visible =
-                    labelRuleType.Visible = comboBoxParameterTypes.Visible =
-                    btnSaveRule.Visible = false;
-
-                    await RefreshRulesForSelectedService();
-                };
-
-
 
                 btnEditRule.Click += (s, ev) =>
                 {
@@ -503,25 +510,59 @@ namespace gos
                     }
                 };
 
+                btnSaveRule.Click += async (s, ev) =>
+                {
+                    int serviceIdx = listBoxServices.SelectedIndex;
+                    if (serviceIdx < 0) return;
+
+                    if (string.IsNullOrWhiteSpace(textBoxRuleValue.Text) || comboBoxOperator.SelectedIndex < 0)
+                    {
+                        MessageBox.Show("Введите значение и выберите оператор!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    var ruleDto = new RuleDTO
+                    {
+                        ServiceId = services[serviceIdx].Id,
+                        Value = textBoxRuleValue.Text.Trim(),
+                        ComparisonOperator = comboBoxOperator.SelectedItem.ToString(),
+                        NeededTypeId = (int)comboBoxParameterTypes.SelectedValue
+                    };
+
+                    // Проверяем: редактируем ли мы?
+                    var existingRule = btnSaveRule.Tag as RuleDTO;
+                    if (existingRule != null)
+                    {
+                        ruleDto.Id = existingRule.Id;
+                        await _adminController.UpdateRuleAsync(ruleDto); // нужен метод на сервере!
+                    }
+                    else
+                    {
+                        await _adminController.AddRuleAsync(ruleDto);
+                    }
+
+                    // Сброс формы
+                    textBoxRuleValue.Clear();
+                    comboBoxOperator.SelectedIndex = -1;
+                    comboBoxParameterTypes.SelectedIndex = -1;
+
+                    labelRuleValue.Visible = textBoxRuleValue.Visible =
+                    labelOperator.Visible = comboBoxOperator.Visible =
+                    labelRuleType.Visible = comboBoxParameterTypes.Visible =
+                    btnSaveRule.Visible = false;
+
+                    btnSaveRule.Tag = null;
+
+                    await RefreshRulesForSelectedService();
+                };
 
                 btnSave.Click += async (s, ev) =>
                 {
                     await _adminController.ReplaceAllServicesAsync(services); // если нужно — сохраняем услуги
-                    editForm.Close();
+                    //editForm.Close();
                 };
 
                 editForm.ShowDialog(this);
-            }
-        }
-
-
-
-
-        private void buttonRule_Click(int serviceId)
-        {
-            using (Form ruleForm = new Form())
-            {
-
             }
         }
     }

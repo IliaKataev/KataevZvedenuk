@@ -130,5 +130,10 @@ namespace gos.controllers
         {
             await _adminService.DeleteRuleAsync(ruleId);
         }
+
+        public async Task UpdateRuleAsync(RuleDTO ruleDTO)
+        {
+            await _adminService.UpdateRuleAsync(ruleDTO);
+        }
     }
 }

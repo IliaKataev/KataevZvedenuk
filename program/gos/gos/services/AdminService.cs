@@ -17,7 +17,7 @@ namespace gos.services
         Task<Service> UpdateServiceAsync(ServiceDTO serviceDTO);
         Task<List<RuleDTO>> GetRulesForServiceAsync(int serviceId);
         Task AddRuleAsync(RuleDTO ruleDTO);
-        Task UpdateRuleAsync(int ruleId, RuleDTO ruleDTO);
+        Task UpdateRuleAsync(RuleDTO ruleDTO);
         Task DeleteRuleAsync(int ruleId);
         Task<List<ParameterTypeDTO>> GetParameterTypesAsync();
         Task<ParameterType> CreateParameterTypeAsync(ParameterTypeDTO parameterTypeDTO);
@@ -135,9 +135,9 @@ namespace gos.services
             await _ruleRepository.AddAsync(rule);
         }
 
-        public async Task UpdateRuleAsync(int ruleId, RuleDTO ruleDTO)
+        public async Task UpdateRuleAsync(RuleDTO ruleDTO)
         {
-            var rule = await _ruleRepository.GetByIdAsync(ruleId);
+            var rule = await _ruleRepository.GetByIdAsync(ruleDTO.Id);
             if (rule == null) throw new ArgumentException("Rule not found.");
 
             rule.Value = ruleDTO.Value;
