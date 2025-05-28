@@ -283,7 +283,7 @@ namespace gos
                 editForm.ShowInTaskbar = false;
 
                 var listBoxServices = new ListBox() { Left = 20, Top = 20, Width = 300, Height = 560 };
-                var listBoxRules = new ListBox() { Left = 340, Top = 120, Width = 620, Height = 180 };
+                var listBoxRules = new ListBox() { Left = 340, Top = 160, Width = 620, Height = 180 };
 
                 var labelName = new Label() { Text = "Название услуги:", Left = 340, Top = 30, AutoSize = true };
                 var textBoxName = new TextBox() { Left = 490, Top = 28, Width = 200 };
@@ -293,25 +293,26 @@ namespace gos
 
                 var btnUpdate = new Button() { Text = "Обновить услугу", Left = 700, Top = 28, Width = 220, Height = 40, Enabled = false,  };               
                 var btnAddService = new Button() { Text = "Добавить услугу", Left = 700, Top = 68, Width = 220, Height = 40, };
+                var btnDeactService = new Button() { Text = "Деактивировать услугу", Left = 700, Top = 108, Width = 220, Height = 40, };
 
-                var btnAddRule = new Button() { Text = "Добавить правило", Left = 340, Top = 310, Width = 220, Height = 40, Enabled = false };
-                var btnEditRule = new Button() { Text = "Изменить правило", Left = 560, Top = 310, Width = 220, Height = 40, Enabled = false };
-                var btnDeleteRule = new Button() { Text = "Удалить правило", Left = 760, Top = 310, Width = 220, Height = 40, Enabled = false };
+                var btnAddRule = new Button() { Text = "Добавить правило", Left = 340, Top = 350, Width = 220, Height = 40, Enabled = false };
+                var btnEditRule = new Button() { Text = "Изменить правило", Left = 560, Top = 350, Width = 220, Height = 40, Enabled = false };
+                var btnDeleteRule = new Button() { Text = "Удалить правило", Left = 760, Top = 350, Width = 220, Height = 40, Enabled = false };
 
                 var btnSave = new Button() { Text = "Сохранить и закрыть", Left = 560, Top = 540, Width = 220, Height = 40, DialogResult = DialogResult.OK};
 
-                var labelRuleValue = new Label() { Text = "Значение:", Left = 340, Top = 360, AutoSize = true, Visible = false };
-                var textBoxRuleValue = new TextBox() { Left = 470, Top = 360, Width = 150, Visible = false };
+                var labelRuleValue = new Label() { Text = "Значение:", Left = 340, Top = 400, AutoSize = true, Visible = false };
+                var textBoxRuleValue = new TextBox() { Left = 470, Top = 400, Width = 150, Visible = false };
 
-                var labelOperator = new Label() { Text = "Оператор:", Left = 340, Top = 400, AutoSize = true, Visible = false };
-                var comboBoxOperator = new ComboBox() { Left = 470, Top = 400, Width = 80, DropDownStyle = ComboBoxStyle.DropDownList, Visible = false };
+                var labelOperator = new Label() { Text = "Оператор:", Left = 340, Top = 440, AutoSize = true, Visible = false };
+                var comboBoxOperator = new ComboBox() { Left = 470, Top = 440, Width = 80, DropDownStyle = ComboBoxStyle.DropDownList, Visible = false };
                 comboBoxOperator.Items.AddRange(new string[] { "=", "<", ">", "<=", ">=", "!=" });
 
-                var labelRuleType = new Label() { Text = "Тип:", Left = 340, Top = 440, AutoSize = true, Visible = false };
+                var labelRuleType = new Label() { Text = "Тип:", Left = 340, Top = 480, AutoSize = true, Visible = false };
                 var comboBoxParameterTypes = new ComboBox()
                 {
                     Left = 470,
-                    Top = 440,
+                    Top = 480,
                     Width = 200,
                     DropDownStyle = ComboBoxStyle.DropDownList,
                     DisplayMember = "Name",
@@ -327,7 +328,7 @@ namespace gos
                     listBoxServices, listBoxRules, labelName, textBoxName, labelDesc, textBoxDesc,
                     btnUpdate, btnAddRule, btnEditRule, btnDeleteRule, btnSave,
                     labelRuleValue, textBoxRuleValue, labelOperator, comboBoxOperator,
-                    labelRuleType, comboBoxParameterTypes, btnSaveRule, btnAddService
+                    labelRuleType, comboBoxParameterTypes, btnSaveRule, btnAddService, btnDeactService
                 });
 
                 var parameterTypes = (await _adminController.GetParameterTypesAsync()).ToList();
@@ -335,6 +336,7 @@ namespace gos
 
 
                 var services = (await _adminController.GetAllServicesAsync()).ToList();
+
                 listBoxServices.Items.AddRange(services.Select(s => s.Name).ToArray());
 
                 async Task RefreshRulesForSelectedService()
@@ -433,7 +435,6 @@ namespace gos
 
                 };
 
-
                 btnUpdate.Click += async (s, ev) =>
                 {
                     int idx = listBoxServices.SelectedIndex;
@@ -455,6 +456,32 @@ namespace gos
                     textBoxName.Text = "";
                     textBoxDesc.Text = "";
                 };
+
+                //Не работает кнопка деактивации - не хочет записывать в бд обновленное значение деактивации
+                btnDeactService.Click += async (s, ev) =>
+                {
+                    int idx = listBoxServices.SelectedIndex;
+
+                    // Найдем нужную услугу по Id
+                    var existing = services.FirstOrDefault(s => s.Id == services[idx].Id);
+                    if (existing != null)
+                    {
+                        existing.DeactivationDate = DateOnly.FromDateTime(DateTime.Today);
+                        MessageBox.Show("Услуга деактивирована");
+
+                        await _adminController.ReplaceAllServicesAsync(services);
+                        await RefreshServices();
+                    }
+
+                    //сброс всего
+                    listBoxRules.SelectedIndex = -1;
+                    listBoxRules.SelectedItem = null;
+                    listBoxRules.SelectedValue = null;
+                    textBoxName.Text = "";
+                    textBoxDesc.Text = "";
+                };
+
+
 
                 btnAddRule.Click += (s, ev) =>
                 {
