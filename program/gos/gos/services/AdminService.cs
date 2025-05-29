@@ -111,6 +111,7 @@ namespace gos.services
                     Value = pt.Value,
                     ComparisonOperator = pt.ComparisonOperator,
                     NeededTypeId = pt.NeededTypeId,
+                    DeadlineDays = pt.DeadlineDays
                 })
                 .ToList();
 
@@ -131,7 +132,8 @@ namespace gos.services
                 ServiceId = ruleDTO.ServiceId,
                 Value = ruleDTO.Value,
                 ComparisonOperator = ruleDTO.ComparisonOperator,
-                NeededTypeId = ruleDTO.NeededTypeId
+                NeededTypeId = ruleDTO.NeededTypeId,
+                DeadlineDays = ruleDTO.DeadlineDays
             };
 
             await _ruleRepository.AddAsync(rule);
@@ -145,6 +147,7 @@ namespace gos.services
             rule.Value = ruleDTO.Value;
             rule.ComparisonOperator = ruleDTO.ComparisonOperator;
             rule.NeededTypeId = ruleDTO.NeededTypeId;
+            rule.DeadlineDays = ruleDTO.DeadlineDays;
 
             await _ruleRepository.UpdateAsync(rule);
         }
@@ -279,9 +282,7 @@ namespace gos.services
                         await _serviceRepository.AddAsync(newEntity);
                     }
                 }
-            }
-
-            // ❌ НЕ УДАЛЯЕМ услуги и ❌ НЕ УДАЛЯЕМ правила
+            }        
         }
 
 

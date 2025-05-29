@@ -32,7 +32,7 @@ public partial class AppDbContext : DbContext
             // NpgsqlConnection.GlobalTypeMapper.EnableUnmappedTypes();
             // NpgsqlConnection.GlobalTypeMapper.MapEnum<UserRole>("public.user_role");
 
-            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=gosuslugi;Username=postgres;Password=1111");
+            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=gosuslugi;Username=postgres;Password=12345");
         }
     }
 
@@ -147,6 +147,8 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Value)
                 .HasMaxLength(255)
                 .HasColumnName("value");
+            entity.Property(e => e.DeadlineDays)
+                .HasColumnName("deadline_days"); // <= добавлено
 
             entity.HasOne(d => d.NeededType).WithMany(p => p.Rules)
                 .HasForeignKey(d => d.NeededTypeId)
@@ -156,6 +158,7 @@ public partial class AppDbContext : DbContext
                 .HasForeignKey(d => d.ServiceId)
                 .HasConstraintName("rules_service_id_fkey");
         });
+
 
         modelBuilder.Entity<Service>(entity =>
         {

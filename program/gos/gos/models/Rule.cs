@@ -15,6 +15,8 @@ public partial class Rule
 
     public int NeededTypeId { get; set; }
 
+    public int? DeadlineDays { get; set; } // <= новое поле
+
     public virtual ParameterType NeededType { get; set; } = null!;
 
     public virtual Service Service { get; set; } = null!;

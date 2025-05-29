@@ -304,7 +304,7 @@ namespace gos
                 editForm.Text = "Редактирование услуг и правил";
                 editForm.FormBorderStyle = FormBorderStyle.FixedDialog;
                 editForm.StartPosition = FormStartPosition.CenterParent;
-                editForm.ClientSize = new Size(1000, 600);
+                editForm.ClientSize = new Size(1000, 615);
                 editForm.MaximizeBox = false;
                 editForm.MinimizeBox = false;
                 editForm.ShowInTaskbar = false;
@@ -328,10 +328,8 @@ namespace gos
                 var btnEditRule = new Button() { Text = "Изменить правило", Left = 560, Top = 350, Width = 220, Height = 40, Enabled = false };
                 var btnDeleteRule = new Button() { Text = "Удалить правило", Left = 760, Top = 350, Width = 220, Height = 40, Enabled = false };
 
-                var btnOk = new Button() { Text = "Сохранить", Left = 560, Top = 540, Width = 110, Height = 40, DialogResult = DialogResult.OK };
-                var btnCancel = new Button() { Text = "Закрыть", Left = 670, Top = 540, Width = 110, Height = 40, DialogResult = DialogResult.Cancel };
-
-
+                var btnOk = new Button() { Text = "Сохранить", Left = 560, Top = 555, Width = 110, Height = 40, DialogResult = DialogResult.OK };
+                var btnCancel = new Button() { Text = "Закрыть", Left = 670, Top = 555, Width = 110, Height = 40, DialogResult = DialogResult.Cancel };
 
                 var labelRuleValue = new Label() { Text = "Значение:", Left = 340, Top = 400, AutoSize = true, Visible = false };
                 var textBoxRuleValue = new TextBox() { Left = 470, Top = 400, Width = 150, Visible = false };
@@ -352,6 +350,9 @@ namespace gos
                     Visible = false
                 };
 
+                var labelDeadlineDays = new Label() { Text = "Срок (дней):", Left = 340, Top = 520, AutoSize = true, Visible = false };
+                var textBoxDeadlineDays = new TextBox() { Left = 470, Top = 520, Width = 150, Visible = false };
+
                 var btnSaveRule = new Button() { Text = "Сохранить правило", Left = 750, Top = 415, Width = 220, Height = 40, Visible = false };
                 var btnCancelRule = new Button() { Text = "Отменить", Left = 750, Top = 455, Width = 220, Height = 40, Visible = false };
 
@@ -361,7 +362,8 @@ namespace gos
                     listBoxServices, listBoxRules, labelName, textBoxName, labelDesc, textBoxDesc,
                     btnUpdate, btnAddRule, btnEditRule, btnDeleteRule, btnOk, btnCancel,
                     labelRuleValue, textBoxRuleValue, labelOperator, comboBoxOperator,
-                    labelRuleType, comboBoxParameterTypes, btnSaveRule, btnAddService, btnDeactService, btnCancelService, btnCancelRule
+                    labelRuleType, comboBoxParameterTypes, btnSaveRule, btnAddService, btnDeactService, btnCancelService, btnCancelRule,
+                    labelDeadlineDays, textBoxDeadlineDays
                 });
 
                 var parameterTypes = (await _adminController.GetParameterTypesAsync()).ToList();
@@ -401,6 +403,8 @@ namespace gos
 
                 async Task RefreshServices()
                 {
+                    //listBoxServices.SelectedIndexChanged -= ListBoxServices_SelectedIndexChanged;
+
                     listBoxServices.Items.Clear();
                     services = (await _adminController.GetAllServicesAsync()).ToList();
 
@@ -410,9 +414,11 @@ namespace gos
                             : s.Name)
                         .ToArray());
 
-                    if (services.Any())
-                        listBoxServices.SelectedIndex = 0;
+                    //listBoxServices.SelectedIndexChanged += ListBoxServices_SelectedIndexChanged;
+
+                    //listBoxServices.SelectedIndex = 0;
                 }
+
 
                 /*void UpdateServiceButtons()
                 {
@@ -426,17 +432,27 @@ namespace gos
                     int idx = listBoxServices.SelectedIndex;
                     if (idx >= 0)
                     {
-                        var selected = services[idx];
-                        btnUpdate.Enabled = true; 
-                        textBoxName.Text = selected.Name;
-                        textBoxDesc.Text = selected.Description;
-                        btnCancelService.Enabled = true;
-                        btnDeactService.Enabled = true;
-                        btnAddService.Enabled = false;
+                        if (services[idx].DeactivationDate != null && services[idx].DeactivationDate > DateOnly.MinValue)
+                        {
+                            btnAddRule.Enabled = false;
+                            btnUpdate.Enabled = false;
+                            btnDeactService.Enabled = false;
+                        }
+                        else 
+                        {
+                            var selected = services[idx];
+                            btnUpdate.Enabled = true;
+                            textBoxName.Text = selected.Name;
+                            textBoxDesc.Text = selected.Description;
+                            btnCancelService.Enabled = true;
+                            btnDeactService.Enabled = true;
+                            btnAddService.Enabled = false;
+                            await RefreshRulesForSelectedService();
+                        }
                     }
                     else
                     {
-                        listBoxServices.ClearSelected();
+                        listBoxRules.Items.Clear();
                         textBoxName.Clear();
                         textBoxDesc.Clear();
                         btnAddService.Enabled = true;
@@ -447,7 +463,7 @@ namespace gos
                     }
 
                     //UpdateServiceButtons();
-                    await RefreshRulesForSelectedService();
+                    //await RefreshRulesForSelectedService();
                 };
 
                 listBoxRules.SelectedIndexChanged += (s, ev) =>
@@ -455,15 +471,17 @@ namespace gos
                     btnEditRule.Enabled = btnDeleteRule.Enabled = listBoxRules.SelectedIndex >= 0;
                 };
 
+
                 //textBoxName.TextChanged += (s, ev) => UpdateServiceButtons();
                 //textBoxDesc.TextChanged += (s, ev) => UpdateServiceButtons();
 
-                btnCancelService.Click += (s, e) =>
+                btnCancelService.Click += async (s, e) =>
                 {
                     int idx = listBoxServices.SelectedIndex;
                     if (idx >= 0)
                     {
-                        listBoxServices.ClearSelected();
+                        listBoxServices.SelectedIndex = -1;
+                        await RefreshRulesForSelectedService();
                     }
                 };
 
@@ -497,6 +515,8 @@ namespace gos
                     int newIndex = services.FindIndex(s => s.Name == newService.Name && s.Description == newService.Description);
                     if (newIndex >= 0)
                         listBoxServices.SelectedIndex = newIndex;
+
+                    await RefreshRulesForSelectedService();
                 };
 
 
@@ -511,15 +531,22 @@ namespace gos
                             return;
                         }
 
+                        int serviceId = services[idx].Id; // Сохраняем ID
+
                         services[idx].Name = textBoxName.Text.Trim();
                         services[idx].Description = textBoxDesc.Text.Trim();
-                        listBoxServices.Items[idx] = services[idx].Name;
+
+                        await _adminController.ReplaceAllServicesAsync(services); // если нужно — сохраняем услуги
+
+                        await RefreshServices(); // обновляем локальный список и UI
+
+                        int newIndex = services.FindIndex(s => s.Name == services[idx].Name && s.Description == services[idx].Description);
+                        if (newIndex >= 0)
+                            listBoxServices.SelectedIndex = newIndex;
                     }
-
-                    await _adminController.ReplaceAllServicesAsync(services); // если нужно — сохраняем услуги
-
-                    await RefreshServices();
                 };
+
+
 
                 btnDeactService.Click += async (s, ev) =>
                 {
@@ -540,9 +567,20 @@ namespace gos
 
                         await _adminController.ReplaceAllServicesAsync(services);
                         await RefreshServices();
+
+                        //сбрасываем самостоятельно
+                        listBoxRules.Items.Clear();
+                        textBoxName.Clear();
+                        textBoxDesc.Clear();
+                        btnAddService.Enabled = true;
+                        btnAddRule.Enabled = false;
+                        btnUpdate.Enabled = false;
+                        btnCancelService.Enabled = false;
+                        btnDeactService.Enabled = false;
                     }
                 };
 
+                // Добавление нового правила
                 btnAddRule.Click += (s, ev) =>
                 {
                     int idx = listBoxServices.SelectedIndex;
@@ -551,14 +589,17 @@ namespace gos
                         labelRuleValue.Visible = textBoxRuleValue.Visible =
                         labelOperator.Visible = comboBoxOperator.Visible =
                         labelRuleType.Visible = comboBoxParameterTypes.Visible =
-                        btnSaveRule.Visible = btnCancelRule.Visible = true;
+                        btnSaveRule.Visible = btnCancelRule.Visible =
+                        labelDeadlineDays.Visible = textBoxDeadlineDays.Visible = true;
 
                         textBoxRuleValue.Text = "";
                         comboBoxOperator.SelectedIndex = 0;
                         comboBoxParameterTypes.SelectedValue = 0;
+                        textBoxDeadlineDays.Text = "";
                     }
                 };
 
+                // Редактирование правила
                 btnEditRule.Click += (s, ev) =>
                 {
                     int idx = listBoxRules.SelectedIndex;
@@ -572,11 +613,15 @@ namespace gos
                         labelRuleValue.Visible = textBoxRuleValue.Visible =
                         labelOperator.Visible = comboBoxOperator.Visible =
                         labelRuleType.Visible = comboBoxParameterTypes.Visible =
-                        btnSaveRule.Visible = btnCancelRule.Visible = true;
+                        btnSaveRule.Visible = btnCancelRule.Visible =
+                        labelDeadlineDays.Visible = textBoxDeadlineDays.Visible = true;
 
                         textBoxRuleValue.Text = ruleToEdit.Value;
                         comboBoxOperator.SelectedItem = ruleToEdit.ComparisonOperator;
                         comboBoxParameterTypes.SelectedValue = ruleToEdit.NeededTypeId;
+
+                        // Заполняем срок
+                        textBoxDeadlineDays.Text = ruleToEdit.DeadlineDays?.ToString() ?? "";
 
                         // Временно сохраняем редактируемое правило в Tag
                         btnSaveRule.Tag = ruleToEdit;
@@ -601,6 +646,7 @@ namespace gos
                     }
                 };
 
+                // Сохранение правила
                 btnSaveRule.Click += async (s, ev) =>
                 {
                     int serviceIdx = listBoxServices.SelectedIndex;
@@ -612,20 +658,26 @@ namespace gos
                         return;
                     }
 
+                    int? deadlineDays = null;
+                    if (int.TryParse(textBoxDeadlineDays.Text.Trim(), out int parsedDeadline))
+                    {
+                        deadlineDays = parsedDeadline;
+                    }
+
                     var ruleDto = new RuleDTO
                     {
                         ServiceId = services[serviceIdx].Id,
                         Value = textBoxRuleValue.Text.Trim(),
                         ComparisonOperator = comboBoxOperator.SelectedItem.ToString(),
-                        NeededTypeId = (int)comboBoxParameterTypes.SelectedValue
+                        NeededTypeId = (int)comboBoxParameterTypes.SelectedValue,
+                        DeadlineDays = deadlineDays
                     };
 
-                    // Проверяем: редактируем ли мы?
                     var existingRule = btnSaveRule.Tag as RuleDTO;
                     if (existingRule != null)
                     {
                         ruleDto.Id = existingRule.Id;
-                        await _adminController.UpdateRuleAsync(ruleDto); // нужен метод на сервере!
+                        await _adminController.UpdateRuleAsync(ruleDto);
                     }
                     else
                     {
@@ -636,11 +688,13 @@ namespace gos
                     textBoxRuleValue.Clear();
                     comboBoxOperator.SelectedIndex = -1;
                     comboBoxParameterTypes.SelectedIndex = -1;
+                    textBoxDeadlineDays.Clear();
 
                     labelRuleValue.Visible = textBoxRuleValue.Visible =
                     labelOperator.Visible = comboBoxOperator.Visible =
                     labelRuleType.Visible = comboBoxParameterTypes.Visible =
-                    btnSaveRule.Visible = btnCancelRule.Visible = false;
+                    btnSaveRule.Visible = btnCancelRule.Visible =
+                    labelDeadlineDays.Visible = textBoxDeadlineDays.Visible = false;
 
                     btnSaveRule.Tag = null;
 
@@ -653,7 +707,8 @@ namespace gos
                     labelRuleValue.Visible = textBoxRuleValue.Visible =
                     labelOperator.Visible = comboBoxOperator.Visible =
                     labelRuleType.Visible = comboBoxParameterTypes.Visible =
-                    btnSaveRule.Visible = false;
+                    btnSaveRule.Visible =
+                    labelDeadlineDays.Visible = textBoxDeadlineDays.Visible = false;
 
                     // Очищаем поля
                     textBoxRuleValue.Clear();
