@@ -318,7 +318,7 @@ namespace gos
                 var labelDesc = new Label() { Text = "Описание:", Left = 340, Top = 70, AutoSize = true };
                 var textBoxDesc = new TextBox() { Left = 490, Top = 68, Width = 200 };
 
-                var btnCancelService = new Button() { Text = "Отменить выбор услуги", Left = 100, Top = 530, Width = 220, Height = 40, Enabled = false };
+                var btnCancelService = new Button() { Text = "Отменить выбор услуги", Left = 100, Top = 540, Width = 220, Height = 40, Enabled = false };
 
                 var btnUpdate = new Button() { Text = "Обновить услугу", Left = 700, Top = 28, Width = 220, Height = 40, Enabled = false };
                 var btnAddService = new Button() { Text = "Добавить услугу", Left = 700, Top = 68, Width = 220, Height = 40 };
@@ -328,7 +328,10 @@ namespace gos
                 var btnEditRule = new Button() { Text = "Изменить правило", Left = 560, Top = 350, Width = 220, Height = 40, Enabled = false };
                 var btnDeleteRule = new Button() { Text = "Удалить правило", Left = 760, Top = 350, Width = 220, Height = 40, Enabled = false };
 
-                var btnSave = new Button() { Text = "Сохранить и закрыть", Left = 560, Top = 540, Width = 220, Height = 40, DialogResult = DialogResult.OK };
+                var btnOk = new Button() { Text = "Сохранить", Left = 560, Top = 540, Width = 110, Height = 40, DialogResult = DialogResult.OK };
+                var btnCancel = new Button() { Text = "Закрыть", Left = 670, Top = 540, Width = 110, Height = 40, DialogResult = DialogResult.Cancel };
+
+
 
                 var labelRuleValue = new Label() { Text = "Значение:", Left = 340, Top = 400, AutoSize = true, Visible = false };
                 var textBoxRuleValue = new TextBox() { Left = 470, Top = 400, Width = 150, Visible = false };
@@ -349,14 +352,14 @@ namespace gos
                     Visible = false
                 };
 
-                var btnSaveRule = new Button() { Text = "Сохранить правило", Left = 800, Top = 415, Width = 220, Height = 40, Visible = false };
-                var btnCancelRule = new Button() { Text = "Отменить", Left = 800, Top = 455, Width = 220, Height = 40, Visible = false };
+                var btnSaveRule = new Button() { Text = "Сохранить правило", Left = 750, Top = 415, Width = 220, Height = 40, Visible = false };
+                var btnCancelRule = new Button() { Text = "Отменить", Left = 750, Top = 455, Width = 220, Height = 40, Visible = false };
 
 
                 editForm.Controls.AddRange(new Control[]
                 {
                     listBoxServices, listBoxRules, labelName, textBoxName, labelDesc, textBoxDesc,
-                    btnUpdate, btnAddRule, btnEditRule, btnDeleteRule, btnSave,
+                    btnUpdate, btnAddRule, btnEditRule, btnDeleteRule, btnOk, btnCancel,
                     labelRuleValue, textBoxRuleValue, labelOperator, comboBoxOperator,
                     labelRuleType, comboBoxParameterTypes, btnSaveRule, btnAddService, btnDeactService, btnCancelService, btnCancelRule
                 });
@@ -411,12 +414,12 @@ namespace gos
                         listBoxServices.SelectedIndex = 0;
                 }
 
-                void UpdateServiceButtons()
+                /*void UpdateServiceButtons()
                 {
                     btnUpdate.Enabled = !string.IsNullOrWhiteSpace(textBoxName.Text)
                                      && !string.IsNullOrWhiteSpace(textBoxDesc.Text)
                                      && listBoxServices.SelectedIndex >= 0;
-                }
+                }*/
 
                 listBoxServices.SelectedIndexChanged += async (s, ev) =>
                 {
@@ -424,20 +427,26 @@ namespace gos
                     if (idx >= 0)
                     {
                         var selected = services[idx];
+                        btnUpdate.Enabled = true; 
                         textBoxName.Text = selected.Name;
                         textBoxDesc.Text = selected.Description;
                         btnCancelService.Enabled = true;
-                        btnUpdate.Enabled = true;
                         btnDeactService.Enabled = true;
+                        btnAddService.Enabled = false;
                     }
                     else
                     {
+                        listBoxServices.ClearSelected();
                         textBoxName.Clear();
                         textBoxDesc.Clear();
+                        btnAddService.Enabled = true;
                         btnAddRule.Enabled = false;
+                        btnUpdate.Enabled = false;
+                        btnCancelService.Enabled = false;
+                        btnDeactService.Enabled = false;
                     }
 
-                    UpdateServiceButtons();
+                    //UpdateServiceButtons();
                     await RefreshRulesForSelectedService();
                 };
 
@@ -446,8 +455,8 @@ namespace gos
                     btnEditRule.Enabled = btnDeleteRule.Enabled = listBoxRules.SelectedIndex >= 0;
                 };
 
-                textBoxName.TextChanged += (s, ev) => UpdateServiceButtons();
-                textBoxDesc.TextChanged += (s, ev) => UpdateServiceButtons();
+                //textBoxName.TextChanged += (s, ev) => UpdateServiceButtons();
+                //textBoxDesc.TextChanged += (s, ev) => UpdateServiceButtons();
 
                 btnCancelService.Click += (s, e) =>
                 {
@@ -455,8 +464,6 @@ namespace gos
                     if (idx >= 0)
                     {
                         listBoxServices.ClearSelected();
-                        btnCancelService.Enabled = false;
-
                     }
                 };
 
@@ -490,9 +497,6 @@ namespace gos
                     int newIndex = services.FindIndex(s => s.Name == newService.Name && s.Description == newService.Description);
                     if (newIndex >= 0)
                         listBoxServices.SelectedIndex = newIndex;
-
-                    textBoxName.Clear();
-                    textBoxDesc.Clear();
                 };
 
 
@@ -501,6 +505,12 @@ namespace gos
                     int idx = listBoxServices.SelectedIndex;
                     if (idx >= 0)
                     {
+                        if (services[idx].DeactivationDate != null && services[idx].DeactivationDate > DateOnly.MinValue)
+                        {
+                            MessageBox.Show("Эта услуга деактивирована. Ее нельзя изменить!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            return;
+                        }
+
                         services[idx].Name = textBoxName.Text.Trim();
                         services[idx].Description = textBoxDesc.Text.Trim();
                         listBoxServices.Items[idx] = services[idx].Name;
@@ -509,19 +519,8 @@ namespace gos
                     await _adminController.ReplaceAllServicesAsync(services); // если нужно — сохраняем услуги
 
                     await RefreshServices();
-
-                    listBoxServices.ClearSelected(); 
-
-                    textBoxName.Clear();
-                    textBoxDesc.Clear();
-
-                    listBoxRules.ClearSelected();
-
-                    btnAddRule.Enabled = false;
-                    btnCancelService.Enabled = false;
                 };
 
-                //Не работает кнопка деактивации - не хочет записывать в бд обновленное значение деактивации
                 btnDeactService.Click += async (s, ev) =>
                 {
                     int idx = listBoxServices.SelectedIndex;
@@ -529,20 +528,18 @@ namespace gos
                     // Найдем нужную услугу по Id
                     if (idx >= 0)
                     {
+                        if (services[idx].DeactivationDate != null && services[idx].DeactivationDate > DateOnly.MinValue)
+                        {
+                            MessageBox.Show("Эта услуга уже деактивирована.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            return;
+                        }
+
                         services[idx].DeactivationDate = DateOnly.FromDateTime(DateTime.Today);
                         textBoxName.Text += $" деактивирована: {services[idx].ToString()}";
                         MessageBox.Show("Услуга деактивирована");
 
                         await _adminController.ReplaceAllServicesAsync(services);
                         await RefreshServices();
-
-                        textBoxName.Clear();
-                        textBoxDesc.Clear();
-
-                        listBoxRules.ClearSelected();
-                        btnAddRule.Enabled = false;
-                        btnCancelService.Enabled = false;
-                        btnDeactService.Enabled = false;
                     }
                 };
 
@@ -668,10 +665,9 @@ namespace gos
                 };
 
 
-                btnSave.Click += async (s, ev) =>
+                btnOk.Click += async (s, ev) =>
                 {
                     await _adminController.ReplaceAllServicesAsync(services); // если нужно — сохраняем услуги
-                    //editForm.Close();
                 };
 
                 editForm.ShowDialog(this);

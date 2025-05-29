@@ -95,63 +95,143 @@ namespace gos
         {
             using (Form paramForm = new Form())
             {
-                paramForm.Text = "Добавление параметра";
+                paramForm.Text = "Управление параметрами";
                 paramForm.FormBorderStyle = FormBorderStyle.FixedDialog;
                 paramForm.StartPosition = FormStartPosition.CenterParent;
-                paramForm.ClientSize = new Size(400, 200);
+                paramForm.ClientSize = new Size(500, 300);
                 paramForm.MaximizeBox = false;
                 paramForm.MinimizeBox = false;
                 paramForm.ShowInTaskbar = false;
 
-                // Метка и комбобокс для типа параметра
+                // Список параметров
+                ListView listViewParams = new ListView()
+                {
+                    View = View.Details,
+                    FullRowSelect = true,
+                    Location = new Point(10, 10),
+                    Size = new Size(480, 180)
+                };
+                listViewParams.Columns.Add("Тип", 200);
+                listViewParams.Columns.Add("Значение", 240);
+
+                // Загрузка параметров пользователя
+                List<ParameterDTO> parameters = await _citizenController.LoadParameters();
+
+                // Загрузка типов
+                List<ParameterTypeDTO> types = await _citizenController.LoadParameterTypesAsync();
+
+                void RefreshList()
+                {
+                    listViewParams.Items.Clear();
+                    foreach (var param in parameters)
+                    {
+                        string typeName = types.FirstOrDefault(t => t.Id == param.TypeId)?.Name ?? "Неизвестно";
+                        listViewParams.Items.Add(new ListViewItem(new[] { typeName, param.Value }) { Tag = param });
+                    }
+                }
+
+                RefreshList();
+
+                // Кнопки
+                Button btnAdd = new Button() { Text = "Добавить", Location = new Point(10, 210), Width = 110, Height = 40 };
+                Button btnEdit = new Button() { Text = "Изменить", Location = new Point(120, 210), Width = 110, Height = 40 };
+                Button btnDelete = new Button() { Text = "Удалить", Location = new Point(230, 210), Width = 110, Height = 40 };
+                Button btnClose = new Button() { Text = "Закрыть", Location = new Point(380, 250), Width = 110, Height = 40, DialogResult = DialogResult.Cancel };
+
+                // Добавление параметра
+                btnAdd.Click += async (s, ev) =>
+                {
+                    if (ShowParameterDialog(types, out var selectedTypeId, out var value))
+                    {
+                        await _citizenController.AddParameterAsync(selectedTypeId, value);
+                        parameters = await _citizenController.LoadParameters();
+                        RefreshList();
+                    }
+                };
+
+                // Редактирование
+                btnEdit.Click += async (s, ev) =>
+                {
+                    if (listViewParams.SelectedItems.Count == 0) return;
+
+                    var param = (ParameterDTO)listViewParams.SelectedItems[0].Tag;
+
+                    if (ShowParameterDialog(types, out var newTypeId, out var newValue, param.TypeId, param.Value))
+                    {
+                        await _citizenController.UpdateParameterAsync(param.Id, newTypeId, newValue);
+                        parameters = await _citizenController.LoadParameters();
+                        RefreshList();
+                    }
+                };
+
+                // Удаление
+                btnDelete.Click += async (s, ev) =>
+                {
+                    if (listViewParams.SelectedItems.Count == 0) return;
+
+                    var param = (ParameterDTO)listViewParams.SelectedItems[0].Tag;
+
+                    if (MessageBox.Show("Удалить параметр?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    {
+                        await _citizenController.DeleteParameterAsync(param.Id);
+                        parameters = await _citizenController.LoadParameters();
+                        RefreshList();
+                    }
+                };
+
+                paramForm.Controls.AddRange(new Control[] { listViewParams, btnAdd, btnEdit, btnDelete, btnClose });
+
+                paramForm.ShowDialog(this);
+            }
+        }
+
+        private bool ShowParameterDialog(List<ParameterTypeDTO> types, out int selectedTypeId, out string value, int? defaultTypeId = null, string defaultValue = "")
+        {
+            selectedTypeId = -1;
+            value = "";
+
+            using (Form dialog = new Form())
+            {
+                dialog.Text = "Параметр";
+                dialog.FormBorderStyle = FormBorderStyle.FixedDialog;
+                dialog.StartPosition = FormStartPosition.CenterParent;
+                dialog.ClientSize = new Size(400, 160);
+                dialog.MaximizeBox = false;
+                dialog.MinimizeBox = false;
+
                 Label lblType = new Label() { Text = "Тип параметра:", Left = 20, Top = 20, AutoSize = true };
-                ComboBox cmbTypes = new ComboBox() { Left = 150, Top = 20, Width = 200, DropDownStyle = ComboBoxStyle.DropDownList };
-
-                // Получение типов параметров
-                List<ParameterTypeDTO> types;
-                try
-                {
-                    types = await _citizenController.LoadParameterTypesAsync();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка загрузки типов параметров: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
+                ComboBox cmbTypes = new ComboBox() { Left = 160, Top = 20, Width = 200, DropDownStyle = ComboBoxStyle.DropDownList };
                 cmbTypes.DataSource = types;
                 cmbTypes.DisplayMember = "Name";
                 cmbTypes.ValueMember = "Id";
 
-                // Метка и поле ввода значения
+                if (defaultTypeId.HasValue)
+                    cmbTypes.SelectedValue = defaultTypeId.Value;
+
                 Label lblValue = new Label() { Text = "Значение:", Left = 20, Top = 60, AutoSize = true };
-                TextBox txtValue = new TextBox() { Left = 150, Top = 60, Width = 200 };
+                TextBox txtValue = new TextBox() { Left = 160, Top = 60, Width = 200, Text = defaultValue };
 
-                // Кнопки
-                Button btnOk = new Button() { Text = "Добавить", Left = 150, Top = 110, DialogResult = DialogResult.OK, AutoSize = true };
-                Button btnCancel = new Button() { Text = "Отмена", Left = 250, Top = 110, DialogResult = DialogResult.Cancel, AutoSize = true };
+                Button btnOk = new Button() { Text = "ОК", Left = 160, Top = 100, Height = 40, DialogResult = DialogResult.OK };
+                Button btnCancel = new Button() { Text = "Отмена", Left = 250, Top = 100, Width = 110, Height = 40, DialogResult = DialogResult.Cancel };
 
-                paramForm.Controls.AddRange(new Control[] { lblType, cmbTypes, lblValue, txtValue, btnOk, btnCancel });
-                paramForm.AcceptButton = btnOk;
-                paramForm.CancelButton = btnCancel;
+                dialog.Controls.AddRange(new Control[] { lblType, cmbTypes, lblValue, txtValue, btnOk, btnCancel });
+                dialog.AcceptButton = btnOk;
+                dialog.CancelButton = btnCancel;
 
-                if (paramForm.ShowDialog(this) == DialogResult.OK)
+                if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    if (cmbTypes.SelectedItem is ParameterTypeDTO selectedType)
+                    if (cmbTypes.SelectedItem is ParameterTypeDTO type && !string.IsNullOrWhiteSpace(txtValue.Text))
                     {
-                        string value = txtValue.Text.Trim();
-                        if (string.IsNullOrWhiteSpace(value))
-                        {
-                            MessageBox.Show("Значение не может быть пустым.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            return;
-                        }
-
-                        await AddParameterAsync(selectedType.Id, value);
+                        selectedTypeId = type.Id;
+                        value = txtValue.Text.Trim();
+                        return true;
                     }
+                    MessageBox.Show("Пожалуйста, заполните все поля.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
+
+                return false;
             }
         }
-
 
         private async Task AddParameterAsync(int typeId, string value)
         {
