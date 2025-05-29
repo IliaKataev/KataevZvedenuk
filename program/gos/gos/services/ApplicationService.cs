@@ -13,7 +13,7 @@ namespace gos.services
     {
         Task<models.Application> CreateNewApplicationAsync(int userId, ApplicationDTO applicationDTO);
         Task CancelApplicationAsync(models.Application application);
-        Task<DateTime> ProcessApplicationAsync(int applicationId, int serviceId);
+        Task<ApplicationDTO> ProcessApplicationAsync(int applicationId, int serviceId);
     }
 
     public class ApplicationService : IApplicationService
@@ -60,7 +60,7 @@ namespace gos.services
             await _applicationRepository.DeleteAsync(application.Id);
         }
 
-        public async Task<DateTime> ProcessApplicationAsync(int applicationId, int serviceId)
+        public async Task<ApplicationDTO> ProcessApplicationAsync(int applicationId, int serviceId)
         {
             var app = await _applicationRepository.GetByIdAsync(applicationId)
                 ?? throw new ArgumentException("Заявление не найдено");
@@ -71,34 +71,64 @@ namespace gos.services
             var userParams = await _userRepository.GetParametersAsync(user.Id);
             var rules = await _ruleRepository.GetByServiceIdAsync(serviceId);
 
-            foreach (var rule in rules)
+            var ruleGroups = rules.GroupBy(r => r.DeadlineDays ?? -1);
+
+            var groupDescriptions = string.Join("\n\n", ruleGroups.Select(g =>
+    $"Группа DeadlineDays = {g.Key}:\n" +
+    string.Join("\n", g.Select(r =>
+        $"- Тип: {r.NeededType.Type}, Оператор: {r.ComparisonOperator}, Значение: {r.Value}"))
+));
+
+            MessageBox.Show("Группы правил:\n\n" + groupDescriptions);
+
+            List<Rule> successfulGroup = null;
+
+            foreach (var group in ruleGroups)
             {
-                var userParam = userParams.FirstOrDefault(p => p.TypeId == rule.NeededTypeId);
-                if (userParam == null)
+                bool groupPassed = true;
+                foreach (var rule in group)
                 {
-                    app.Status = ApplicationStatus.REJECTED;
-                    app.Result = "Не хватает параметров.";
-                    app.ClosureDate = DateTime.Now;
-                    await _applicationRepository.UpdateAsync(app);
-                    return app.ClosureDate.Value;
+                    var userParam = userParams.FirstOrDefault(p => p.TypeId == rule.NeededTypeId);
+                    if (userParam == null || !Compare(userParam.Value, rule.ComparisonOperator, rule.Value))
+                    {
+                        groupPassed = false;
+                        break;
+                    }
                 }
 
-                if (!Compare(userParam.Value, rule.ComparisonOperator, rule.Value))
+                if (groupPassed)
                 {
-                    app.Status = ApplicationStatus.REJECTED;
-                    app.Result = $"Параметр '{rule.NeededTypeId}' не соответствует условию.";
-                    app.ClosureDate = DateTime.Now;
-                    await _applicationRepository.UpdateAsync(app);
-                    return app.ClosureDate.Value;
+                    successfulGroup = group.ToList();
+                    break;
                 }
             }
 
-            app.Status = ApplicationStatus.COMPLETED;
-            app.Result = "Заявление успешно обработано.";
             app.ClosureDate = DateTime.Now;
+
+            if (successfulGroup != null)
+            {
+                app.Status = ApplicationStatus.COMPLETED;
+                app.Result = $"Пройдена группа правил с DeadlineDays = {successfulGroup.First().DeadlineDays ?? 0}:\n" +
+                             string.Join("\n", successfulGroup.Select(r =>
+                                 $"- Тип: {r.NeededType.Type}, Условие: {r.ComparisonOperator} {r.Value}"));
+            }
+            else
+            {
+                app.Status = ApplicationStatus.REJECTED;
+                app.Result = "Заявление отклонено: ни одна группа правил не прошла проверку.";
+            }
+
             await _applicationRepository.UpdateAsync(app);
-            return app.ClosureDate.Value;
+            return new ApplicationDTO
+            {
+                ApplicationId = app.Id,
+                ServiceId = app.ServiceId,
+                Status = app.Status,
+                Result = app.Result,
+                ClosureDate = app.ClosureDate
+            };
         }
+
 
         private bool Compare(string userValue, string op, string ruleValue)
         {
@@ -106,7 +136,7 @@ namespace gos.services
             {
                 return op switch
                 {
-                    "==" => userVal == ruleVal,
+                    "=" or "==" => userVal == ruleVal,
                     "!=" => userVal != ruleVal,
                     ">" => userVal > ruleVal,
                     "<" => userVal < ruleVal,
@@ -116,11 +146,11 @@ namespace gos.services
                 };
             }
 
-            // Для строкового сравнения
+            // Строковое сравнение без учёта регистра
             return op switch
             {
-                "==" => userValue == ruleValue,
-                "!=" => userValue != ruleValue,
+                "=" or "==" => string.Equals(userValue, ruleValue, StringComparison.OrdinalIgnoreCase),
+                "!=" => !string.Equals(userValue, ruleValue, StringComparison.OrdinalIgnoreCase),
                 _ => false
             };
         }
