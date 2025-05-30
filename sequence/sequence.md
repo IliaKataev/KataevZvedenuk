@@ -5,7 +5,7 @@
 
 **1. Диаграмма последовательности: Вход в систему (администратор)**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/cf106d18cff4659f16a612aa9084faac3ae1a774/sequence/images/admin/admin_login2.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/admin/adminLogin.png)
 
 **Основной сценарий:**
 1. Администратор отправляет логин и пароль в `AuthController`.
@@ -35,9 +35,9 @@
 
 ---
 
-**2. Диаграмма последовательности: Создание услуги**
+**2. Диаграмма последовательности: Взаимодействие с услугой**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/cf106d18cff4659f16a612aa9084faac3ae1a774/sequence/images/admin/admin_serviceCreate2.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/admin/adminAddUpdateDeleteService.png)
 
 **Основной сценарий:**
 1. Администратор отправляет данные о новой услуге (название, описание, правила и др.) в `AdminController`.
@@ -62,59 +62,9 @@
 
 ---
 
-**3. Диаграмма последовательности: Редактирование услуги**
+**3. Диаграмма последовательности: Создание учетной записи**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/cf106d18cff4659f16a612aa9084faac3ae1a774/sequence/images/admin/admin_serviceEdit3.png)
-
-**Основной сценарий:**
-1. Администратор отправляет запрос на редактирование услуги (`serviceId`, новое имя, новое описание, новые правила) в `AdminController`.
-2. `AdminController` вызывает метод `UpdateService` у `AdminService`.
-3. `AdminService` запрашивает старые данные услуги через `ServiceRepository`.
-4. `ServiceRepository` обращается к базе данных и получает текущие данные услуги.
-5. `ServiceRepository` возвращает найденную услугу в `AdminService`.
-6. `AdminService` отправляет обновлённые данные услуги обратно в `ServiceRepository`.
-7. `ServiceRepository` обновляет информацию об услуге в базе данных.
-8. После успешного обновления данных `ServiceRepository` сообщает об этом `AdminService`.
-9. `AdminService` инициирует обновление правил услуги через `RuleRepository`.
-10. `RuleRepository` делает запрос на получение новых правил из базы данных.
-
-**Альтернативные сценарии:**
-- **Правила найдены:**
-  - База данных возвращает найденные правила.
-  - `RuleRepository` обновляет правила, привязывая их к услуге.
-  - `RuleRepository` подтверждает успешное прикрепление правил.
-  - Администратор получает сообщение об успешном обновлении услуги с прикреплёнными правилами.
-
-- **Правила не найдены:**
-  - `RuleRepository` сообщает об ошибке отсутствия правил.
-  - Услуга обновляется, но без прикрепления новых правил.
-  - Администратор получает сообщение, что услуга обновлена без правил.
-
----
-
-**4. Диаграмма последовательности: Удаление услуги (деактивация)**
-
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/cf106d18cff4659f16a612aa9084faac3ae1a774/sequence/images/admin/admin_serviceDelete2.png)
-
-**Основной сценарий:**
-1. Администратор отправляет запрос на удаление услуги (`serviceId`) в `AdminController`.
-2. `AdminController` вызывает метод `DeleteService` у `AdminService`.
-3. `AdminService` запрашивает услугу по `serviceId` через `ServiceRepository`.
-4. `ServiceRepository` делает запрос в базу данных на получение услуги.
-5. База данных возвращает найденную услугу в `ServiceRepository`, а затем — в `AdminService`.
-6. `AdminService` инициирует обновление услуги:
-   - Выставляет поле `deactivationDate` в текущее время.
-7. `ServiceRepository` отправляет запрос на обновление услуги в базу данных.
-8. База данных подтверждает успешную деактивацию услуги.
-9. `ServiceRepository` сообщает об успешной деактивации `AdminService`.
-10. `AdminService` передаёт успешный результат в `AdminController`.
-11. `AdminController` информирует администратора об успешной деактивации услуги.
-
----
-
-**5. Диаграмма последовательности: Создание учетной записи**
-
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/cf106d18cff4659f16a612aa9084faac3ae1a774/sequence/images/admin/admin_userCreate2.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/admin/adminCreateUser.png)
 
 **Основной сценарий:**
 1. Администратор отправляет данные нового пользователя (`username`, `password`, `role` и др.) в `AdminController`.
@@ -143,7 +93,7 @@
 
 **1. Диаграмма последовательности: Создание новой заявки**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/cf106d18cff4659f16a612aa9084faac3ae1a774/sequence/images/citizen/citizen_applicationCreate2.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/citizen/citizenAddApplication.png)
 
 **Основной сценарий:**
 1. Пользователь отправляет запрос на создание новой заявки через `CitizenController`, передавая `serviceId` и `parameters`.
@@ -171,7 +121,7 @@
 
 **2. Диаграмма последовательности: Вход в систему гражданина**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/cf106d18cff4659f16a612aa9084faac3ae1a774/sequence/images/citizen/citizen_Login2.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/citizen/citizenLogin.png)
 
 **Основной сценарий:**
 1. Гражданин отправляет запрос на авторизацию в `AuthController` с `login` и `password`.
@@ -196,7 +146,7 @@
 
 **3. Диаграмма последовательности: Просмотр заявок пользователя**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/cf106d18cff4659f16a612aa9084faac3ae1a774/sequence/images/citizen/citizen_viewApplications.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/citizen/citizenViewApplication.png)
 
 **Основной сценарий:**
 1. Пользователь инициирует действие `ViewMyApplications()` в `CitizenController`.
@@ -217,7 +167,7 @@
 
 **4. Диаграмма последовательности: Отмена заявки пользователя**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/cf106d18cff4659f16a612aa9084faac3ae1a774/sequence/images/citizen/citizen_applicationCancel2.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/citizen/citizenCancelApplication.png)
 
 **Основной сценарий:**
 1. Пользователь инициирует запрос на отмену заявки с помощью метода `CancelMyApplication(applicationId)` в `CitizenController`.
@@ -237,7 +187,7 @@
 
 **5. Диаграмма последовательности: Изменение данных учетной записи пользователя**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/cf106d18cff4659f16a612aa9084faac3ae1a774/sequence/images/citizen/citizen_changeAccountInfo2.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/citizen/CitizenChangeData.png)
 
 **Основной сценарий:**
 1. Пользователь инициирует запрос на изменение данных учетной записи через метод `updatePersonalData(fullname, password)` в `CitizenController`.
@@ -260,7 +210,7 @@
 
 ### **1. Диаграмма последовательности: Вход в систему (Госслужащий)**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/cf106d18cff4659f16a612aa9084faac3ae1a774/sequence/images/servant/servant_login2.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/servant/servantLogin.png)
 
 1. **Запрос на вход:**
    - Госслужащий инициирует вход в систему, отправляя запрос с логином и паролем через `AuthController` методом `Login(login, password)`.
@@ -287,7 +237,7 @@
 
 ### **2. Диаграмма последовательности: Добавление результата к заявке:**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/cf106d18cff4659f16a612aa9084faac3ae1a774/sequence/images/servant/servant_processApplication2.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/servant/servantSetResult.png)
 
 1. **Запрос на обработку заявки:**
    - Госслужащий (актер `civilServant`) отправляет запрос на обработку заявки через `CivilServantController` с идентификатором заявки (`applicationId`) и результатом (`result`) через метод `ProcessApplication(applicationId, result)`.
@@ -319,9 +269,9 @@
 
 ---
 
-### **3. Диаграмма последовательности: Изменение статуса заявки:**
+### **3. Диаграмма последовательности: Обработка заявки:**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/cf106d18cff4659f16a612aa9084faac3ae1a774/sequence/images/servant/servant_changeStatus2.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/servant/servantProcessApplication.png)
 
 1. **Запрос на изменение статуса:**
    - Госслужащий (актер `civilServant`) отправляет запрос через `CivilServantController` для изменения статуса заявки. Запрос включает идентификатор заявки (`applicationId`) и новый статус (`newStatus`) через метод `ChangeStatus(applicationId, newStatus)`.
