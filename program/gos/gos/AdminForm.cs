@@ -403,8 +403,6 @@ namespace gos
 
                 async Task RefreshServices()
                 {
-                    //listBoxServices.SelectedIndexChanged -= ListBoxServices_SelectedIndexChanged;
-
                     listBoxServices.Items.Clear();
                     services = (await _adminController.GetAllServicesAsync()).ToList();
 
@@ -413,19 +411,7 @@ namespace gos
                             ? $"{s.Name} (деактивировано {s.DeactivationDate.Value:dd.MM.yyyy})"
                             : s.Name)
                         .ToArray());
-
-                    //listBoxServices.SelectedIndexChanged += ListBoxServices_SelectedIndexChanged;
-
-                    //listBoxServices.SelectedIndex = 0;
                 }
-
-
-                /*void UpdateServiceButtons()
-                {
-                    btnUpdate.Enabled = !string.IsNullOrWhiteSpace(textBoxName.Text)
-                                     && !string.IsNullOrWhiteSpace(textBoxDesc.Text)
-                                     && listBoxServices.SelectedIndex >= 0;
-                }*/
 
                 listBoxServices.SelectedIndexChanged += async (s, ev) =>
                 {
@@ -461,19 +447,12 @@ namespace gos
                         btnCancelService.Enabled = false;
                         btnDeactService.Enabled = false;
                     }
-
-                    //UpdateServiceButtons();
-                    //await RefreshRulesForSelectedService();
                 };
 
                 listBoxRules.SelectedIndexChanged += (s, ev) =>
                 {
                     btnEditRule.Enabled = btnDeleteRule.Enabled = listBoxRules.SelectedIndex >= 0;
                 };
-
-
-                //textBoxName.TextChanged += (s, ev) => UpdateServiceButtons();
-                //textBoxDesc.TextChanged += (s, ev) => UpdateServiceButtons();
 
                 btnCancelService.Click += async (s, e) =>
                 {

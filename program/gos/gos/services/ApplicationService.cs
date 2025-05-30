@@ -74,10 +74,9 @@ namespace gos.services
             var ruleGroups = rules.GroupBy(r => r.DeadlineDays ?? -1);
 
             var groupDescriptions = string.Join("\n\n", ruleGroups.Select(g =>
-    $"Группа DeadlineDays = {g.Key}:\n" +
-    string.Join("\n", g.Select(r =>
-        $"- Тип: {r.NeededType.Type}, Оператор: {r.ComparisonOperator}, Значение: {r.Value}"))
-));
+                                                $"Группа DeadlineDays = {g.Key}:\n" +
+                                                string.Join("\n", g.Select(r =>
+                                                    $"- Тип: {r.NeededType.Type}, Оператор: {r.ComparisonOperator}, Значение: {r.Value}"))));
 
             MessageBox.Show("Группы правил:\n\n" + groupDescriptions);
 
@@ -107,22 +106,49 @@ namespace gos.services
 
             if (successfulGroup != null)
             {
-                app.Status = ApplicationStatus.COMPLETED;
-                app.Result = $"Пройдена группа правил с DeadlineDays = {successfulGroup.First().DeadlineDays ?? 0}:\n" +
-                             string.Join("\n", successfulGroup.Select(r =>
-                                 $"- Тип: {r.NeededType.Type}, Условие: {r.ComparisonOperator} {r.Value}"));
+                var deadlineDays = successfulGroup.First().DeadlineDays;
+                if (deadlineDays.HasValue && deadlineDays > 0)
+                {
+                    app.Deadline = app.CreationDate.AddDays(deadlineDays.Value);
+                }
+                else
+                {
+                    app.Deadline = null;
+                }
+
+                // Проверяем, просрочен ли дедлайн
+                if (app.Deadline.HasValue && DateTime.Now > app.Deadline.Value)
+                {
+                    app.Status = ApplicationStatus.REJECTED;
+                    app.Result = "Заявление отклонено: просрочен дедлайн.";
+                    app.ClosureDate = DateTime.Now;
+                    app.Deadline = null; // можно очистить, если дедлайн уже неактуален
+                }
+                else
+                {
+                    // Дедлайн не просрочен, заявка успешна
+                    app.Status = ApplicationStatus.COMPLETED;
+                    app.Result = $"Пройдена группа правил с DeadlineDays = {deadlineDays ?? 0}:\n" +
+                                 string.Join("\n", successfulGroup.Select(r =>
+                                     $"- Тип: {r.NeededType.Type}, Условие: {r.ComparisonOperator} {r.Value}"));
+                    app.ClosureDate = null; // Заявка в процессе выполнения
+                }
             }
             else
             {
                 app.Status = ApplicationStatus.REJECTED;
                 app.Result = "Заявление отклонено: ни одна группа правил не прошла проверку.";
+                app.ClosureDate = DateTime.Now;
+                app.Deadline = null;
             }
+
 
             await _applicationRepository.UpdateAsync(app);
             return new ApplicationDTO
             {
                 ApplicationId = app.Id,
                 ServiceId = app.ServiceId,
+                Deadline = app.Deadline,
                 Status = app.Status,
                 Result = app.Result,
                 ClosureDate = app.ClosureDate

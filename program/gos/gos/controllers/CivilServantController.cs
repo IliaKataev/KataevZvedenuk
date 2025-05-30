@@ -40,8 +40,6 @@ namespace gos.controllers
         public async Task<ApplicationDTO> ProcessApplication(ApplicationDTO applicationDTO)
         {
             return await _applicationService.ProcessApplicationAsync(applicationDTO.ApplicationId, applicationDTO.ServiceId);
-
-
         }
     }
 }

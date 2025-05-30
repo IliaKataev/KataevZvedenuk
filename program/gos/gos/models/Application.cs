@@ -19,7 +19,7 @@ public partial class Application
     [Column("closure_date")]
     public DateTime? ClosureDate { get; set; }
     [Column("deadline")]
-    public DateTime Deadline { get; set; }
+    public DateTime? Deadline { get; set; }
 
     public virtual Service Service { get; set; } = null!;
 

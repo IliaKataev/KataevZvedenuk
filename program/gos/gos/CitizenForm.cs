@@ -50,7 +50,7 @@ namespace gos
 
                 // Кнопки
                 Button btnOk = new Button() { Text = "Сохранить", Left = 100, Top = 110, DialogResult = DialogResult.OK, AutoSize = true };
-                Button btnCancel = new Button() { Text = "Отмена", Left = 200, Top = 110, DialogResult = DialogResult.Cancel, AutoSize = true };
+                Button btnCancel = new Button() { Text = "Отмена", Left = 210, Top = 110, DialogResult = DialogResult.Cancel, AutoSize = true };
 
                 editForm.Controls.AddRange(new Control[] { lblName, txtName, lblPassword, txtPassword, btnOk, btnCancel });
                 editForm.AcceptButton = btnOk;
@@ -206,7 +206,25 @@ namespace gos
                 cmbTypes.ValueMember = "Id";
 
                 if (defaultTypeId.HasValue)
-                    cmbTypes.SelectedValue = defaultTypeId.Value;
+                {
+                    var existingItem = types.FirstOrDefault(t => t.Id == defaultTypeId.Value);
+                    if (existingItem == null)
+                    {
+                        existingItem = new ParameterTypeDTO { Id = defaultTypeId.Value, Name = $"Удалённый тип ({defaultTypeId.Value})" };
+                        types.Add(existingItem);
+                    }
+
+                    cmbTypes.DataSource = null; // Обновляем DataSource на всякий случай
+                    cmbTypes.DataSource = types;
+                    cmbTypes.DisplayMember = "Name";
+                    cmbTypes.ValueMember = "Id";
+
+                    cmbTypes.SelectedValue = existingItem.Id;
+                }
+                else
+                {
+                    cmbTypes.SelectedIndex = -1;
+                }
 
                 Label lblValue = new Label() { Text = "Значение:", Left = 20, Top = 60, AutoSize = true };
                 TextBox txtValue = new TextBox() { Left = 160, Top = 60, Width = 200, Text = defaultValue };
@@ -233,7 +251,7 @@ namespace gos
             }
         }
 
-        private async Task AddParameterAsync(int typeId, string value)
+        /*private async Task AddParameterAsync(int typeId, string value)
         {
             try
             {
@@ -255,7 +273,7 @@ namespace gos
 
                 MessageBox.Show(sb.ToString(), "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
+        }*/
 
         private async void buttonAddApplication_Click(object sender, EventArgs e)
         {
@@ -290,7 +308,9 @@ namespace gos
                     Text = "Подать заявление",
                     Left = 20,
                     Top = 100,
-                    Width = 150
+                    Width = 150,
+                    Height = 40
+
                 };
 
                 paramForm.Controls.AddRange(new Control[] { lblService, comboBoxServices, buttonApplyApplication });
@@ -333,8 +353,8 @@ namespace gos
 
                     var missingTypeIds = requiredTypeIds.Except(userTypeIds).ToList();
 
-                    MessageBox.Show("User Type Ids: " + string.Join(", ", userTypeIds));
-                    MessageBox.Show("Required Type Ids: " + string.Join(", ", requiredTypeIds));
+                    //MessageBox.Show("User Type Ids: " + string.Join(", ", userTypeIds));
+                    //MessageBox.Show("Required Type Ids: " + string.Join(", ", requiredTypeIds));
 
 
                     if (missingTypeIds.Any())
@@ -358,8 +378,7 @@ namespace gos
                         ServiceId = selectedService.Id,
                         Status = ApplicationStatus.IN_PROGRESS,
                         CreationDate = DateTime.Now,
-                        Deadline = DateTime.Now.AddMonths(1)
-
+                        //Deadline = DateTime.Now.AddMonths(1) При создании услуги у нас нет дедлайна, дедлайн отображается после обработки госслужащим
                     };
 
                     MessageBox.Show(application.Deadline.ToString());
@@ -387,10 +406,10 @@ namespace gos
 
                 var displayList = applications.Select(app => new
                 {
-                    ApplicationId = app.ApplicationId, // <-- добавляем Id для удаления
+                    app.ApplicationId, // <-- добавляем Id для удаления
                     Услуга = serviceMap.ContainsKey(app.ServiceId) ? serviceMap[app.ServiceId] : "Неизвестно",
                     Создано = app.CreationDate.ToString("dd.MM.yyyy"),
-                    Дедлайн = app.Deadline.ToString("dd.MM.yyyy"),
+                    Дедлайн = app.Deadline.HasValue ? app.Deadline.Value.ToString("dd.MM.yyyy") : "—",
                     Статус = app.Status.ToString(),
                     Результат = app.Result ?? "—"
                 }).ToList();

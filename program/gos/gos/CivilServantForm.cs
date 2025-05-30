@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace gos
 {
@@ -40,19 +41,28 @@ namespace gos
                 var services = await _controller.LoadAvailableServices();
                 var serviceMap = services.ToDictionary(s => s.Id, s => s.Name);
 
-                var displayList = applications.Select(app => new
+                // Фильтруем заявки (исключаем Canceled)
+                var filteredApplications = applications
+                    .Where(app => app.Status != ApplicationStatus.CANCELED)
+                    .ToList();
+
+                // Формируем displayList
+                var displayList = filteredApplications.Select(app => new
                 {
-                    ApplicationId = app.ApplicationId, // <-- добавляем Id для удаления
+                    app.ApplicationId, // для скрытого столбца
                     Услуга = serviceMap.ContainsKey(app.ServiceId) ? serviceMap[app.ServiceId] : "Неизвестно",
                     Создано = app.CreationDate.ToString("dd.MM.yyyy"),
-                    Дедлайн = app.Deadline.ToString("dd.MM.yyyy"),
+                    Дедлайн = app.Deadline.HasValue ? app.Deadline.Value.ToString("dd.MM.yyyy") : "—",
                     Статус = app.Status.ToString(),
-                    Результат = app.Result ?? "—"
+                    Результат = app.Result ?? "—",
+                    Закрыто =
+                        app.Status == ApplicationStatus.REJECTED && app.ClosureDate.HasValue
+                            ? app.ClosureDate.Value.ToString("dd.MM.yyyy")
+                            : (app.ClosureDate.HasValue ? app.ClosureDate.Value.ToString("dd.MM.yyyy") : "—")
                 }).ToList();
 
                 dataGridViewApplications.DataSource = displayList;
 
-                // Сделать столбец ApplicationId скрытым
                 if (dataGridViewApplications.Columns["ApplicationId"] != null)
                     dataGridViewApplications.Columns["ApplicationId"].Visible = false;
             }
@@ -61,6 +71,7 @@ namespace gos
                 MessageBox.Show($"Ошибка загрузки заявлений: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         private async void buttonProcessApplication_Click(object sender, EventArgs e)
         {
@@ -75,6 +86,9 @@ namespace gos
 
             // Загружаем полные данные по заявлению
             var applications = await _controller.LoadApplications();
+            var services = await _controller.LoadAvailableServices();
+            var serviceMap = services.ToDictionary(s => s.Id, s => s.Name);
+
             var application = applications.FirstOrDefault(a => a.ApplicationId == applicationId);
             if (application == null)
             {
@@ -98,7 +112,7 @@ namespace gos
                     Text = $"ID: {application.ApplicationId}\n" +
                            $"Услуга ID: {application.ServiceId}\n" +
                            $"Создано: {application.CreationDate:dd.MM.yyyy}\n" +
-                           $"Дедлайн: {application.Deadline:dd.MM.yyyy}\n" +
+                           $"Дедлайн: {(application.Deadline.HasValue ? application.Deadline.Value.ToString("dd.MM.yyyy") : "—")}\n" +
                            $"Статус: {application.Status}\n" +
                            $"Результат: {application.Result ?? "—"}\n" +
                            $"Закрыто: {(application.ClosureDate.HasValue ? application.ClosureDate.Value.ToString("dd.MM.yyyy") : "—")}",
@@ -109,8 +123,8 @@ namespace gos
                 var comboBoxStatus = new ComboBox()
                 {
                     DropDownStyle = ComboBoxStyle.DropDownList,
-                    Location = new Point(20, 340),
-                    Width = 300
+                    Location = new Point(20, 410),
+                    Width = 320
                 };
 
                 // Поле ввода результата
@@ -119,7 +133,7 @@ namespace gos
                     Multiline = true,
                     Width = 320,
                     Height = 60,
-                    Location = new Point(20, 180),
+                    Location = new Point(20, 300),
                     Text = application.Result ?? ""
                 };
 
@@ -127,22 +141,46 @@ namespace gos
                 var buttonProcess = new Button()
                 {
                     Text = "Обработать (затычка)",
-                    Location = new Point(20, 260),
-                    Width = 150
+                    Location = new Point(20, 365),
+                    Width = 150,
+                    Height = 40
                 };
+
+                comboBoxStatus.SelectedIndexChanged += async (s, e) =>
+                {
+                    var selectedStatus = (ApplicationStatus)comboBoxStatus.SelectedValue;
+                    if (selectedStatus == ApplicationStatus.REJECTED)
+                    {
+                        application.ClosureDate = DateTime.Now;
+                        // Обновляем на форме отображение даты закрытия (например, label или другое поле)
+                        labelInfo.Text = $"ID: {application.ApplicationId}\n" +
+                                         $"Услуга ID: {application.ServiceId}\n" +
+                                         $"Создано: {application.CreationDate:dd.MM.yyyy}\n" +
+                                         $"Дедлайн: {(application.Deadline.HasValue ? application.Deadline.Value.ToString("dd.MM.yyyy") : "—")}\n" +
+                                         $"Статус: {application.Status}\n" +
+                                         $"Результат: {application.Result ?? "—"}\n" +
+                                         $"Закрыто: {application.ClosureDate.Value.ToString("dd.MM.yyyy")}";
+                    }
+                    applications = await RefreshApplicationsAsync(serviceMap);
+                };
+
                 buttonProcess.Click += async (_, __) =>
                 {
                     try
                     {
                         var updatedApplication = await _controller.ProcessApplication(application);
+                        //MessageBox.Show(updatedApplication.Deadline.ToString());
                         application.Status = updatedApplication.Status;
                         application.Result = updatedApplication.Result;
                         application.ClosureDate = updatedApplication.ClosureDate;
+                        application.Deadline = updatedApplication.Deadline;
 
                         MessageBox.Show("Заявление обработано:\n\n" +
                                         $"Статус: {application.Status}\n" +
                                         $"Результат: {application.Result}\n" +
-                                        $"Закрыто: {application.ClosureDate?.ToString("dd.MM.yyyy") ?? "—"}");
+                                        $"Дедлайн: {(application.Deadline.HasValue ? application.Deadline.Value.ToString("dd.MM.yyyy") : "—")}\n" +
+                                        $"Закрыто: {(application.ClosureDate.HasValue ? application.ClosureDate.Value.ToString("dd.MM.yyyy") : "—")}");
+
 
                         comboBoxStatus.SelectedValue = application.Status;
                         textBoxResult.Text = application.Result ?? "";
@@ -151,12 +189,12 @@ namespace gos
                         labelInfo.Text = $"ID: {application.ApplicationId}\n" +
                                          $"Услуга ID: {application.ServiceId}\n" +
                                          $"Создано: {application.CreationDate:dd.MM.yyyy}\n" +
-                                         $"Дедлайн: {application.Deadline:dd.MM.yyyy}\n" +
+                                         $"Дедлайн: {(application.Deadline.HasValue ? application.Deadline.Value.ToString("dd.MM.yyyy") : "—")}\n" +
                                          $"Статус: {application.Status}\n" +
                                          $"Результат: {application.Result ?? "—"}\n" +
                                          $"Закрыто: {(application.ClosureDate.HasValue ? application.ClosureDate.Value.ToString("dd.MM.yyyy") : "—")}";
 
-
+                        applications = await RefreshApplicationsAsync(serviceMap);
 
                     }
                     catch (Exception ex)
@@ -170,8 +208,9 @@ namespace gos
                 var buttonSave = new Button()
                 {
                     Text = "Сохранить",
-                    Location = new Point(200, 260),
+                    Location = new Point(220, 365),
                     Width = 120,
+                    Height = 40,
                     DialogResult = DialogResult.OK
                 };
 
@@ -205,6 +244,10 @@ namespace gos
                     try
                     {
                         await _controller.UpdateApplicationResult(application);
+
+                        // обновляем список
+                        applications = await RefreshApplicationsAsync(serviceMap);
+
                         processForm.DialogResult = DialogResult.OK;
                         processForm.Close();
                     }
@@ -212,17 +255,52 @@ namespace gos
                     {
                         MessageBox.Show($"Ошибка при сохранении: {ex.Message}");
                     }
+
+                    if (application.Status == ApplicationStatus.REJECTED && !application.ClosureDate.HasValue)
+                    {
+                        application.ClosureDate = DateTime.Now;
+                    }
+
                 };
-
-
 
                 // Показываем модально
                 if (processForm.ShowDialog() == DialogResult.OK)
                 {
-                    LoadApplicationsAsync(); // обновить таблицу после сохранения
+                    await LoadApplicationsAsync(); // обновить таблицу после сохранения
                 }
             }
         }
 
+        private async Task<List<ApplicationDTO>> RefreshApplicationsAsync(Dictionary<int, string> serviceMap)
+        {
+            var applications = (await _controller.LoadApplications()).ToList();
+
+            var filteredApps = applications
+                .Where(app => app.Status != ApplicationStatus.CANCELED)
+                .ToList();
+
+
+            var displayList = filteredApps.Select(app => new
+            {
+                ApplicationId = app.ApplicationId,
+                Услуга = serviceMap.ContainsKey(app.ServiceId) ? serviceMap[app.ServiceId] : "Неизвестно",
+                Создано = app.CreationDate.ToString("dd.MM.yyyy") ?? "—",
+                Дедлайн = app.Deadline.HasValue ? app.Deadline.Value.ToString("dd.MM.yyyy") : "—",
+                Статус = app.Status.ToString(),
+                Результат = app.Result ?? "—",
+                Закрыто = app.ClosureDate.HasValue ? app.ClosureDate.Value.ToString("dd.MM.yyyy") : "—"
+            }).ToList();
+
+
+            dataGridViewApplications.DataSource = null;
+            dataGridViewApplications.DataSource = displayList;
+
+            if (dataGridViewApplications.Columns["ApplicationId"] != null)
+            {
+                dataGridViewApplications.Columns["ApplicationId"].Visible = false;
+            }
+
+            return applications;
+        }
     }
 }
