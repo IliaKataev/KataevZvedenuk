@@ -33,18 +33,13 @@ namespace gos.services
             _serviceRepository = serviceRepository;
         }
 
-        /*public bool IsCivilServant()
-        {
-            var user = _authSession.CurrentUser;  // Использование экземпляра _authSession
-            return user != null && user.Login.StartsWith("gov_"); // Примерная проверка
-        }*/
+
 
         public async Task<List<ApplicationDTO>> GetMyApplicationsAsync() //тут должны возвращаться DTOшки
         {
             var user = _authSession.CurrentUser ?? throw new UnauthorizedAccessException();
             var apps = await _applicationRepository.GetAllAsync();
             return apps
-               // .Where(a => a.Status != ApplicationStatus.CANCELED)
                 .Select(a => new ApplicationDTO
             {
                 ApplicationId = a.Id,
@@ -53,7 +48,8 @@ namespace gos.services
                 Status = a.Status,
                 CreationDate = a.CreationDate,
                 Deadline = a.Deadline,
-                Result = a.Result
+                Result = a.Result,
+                ClosureDate = a.ClosureDate,
             }).ToList();
         }
         public async Task<List<ServiceDTO>> GetAvailableServicesAsync()
@@ -68,7 +64,7 @@ namespace gos.services
                     Name = service.Name,
                     Description = service.Description,
                     ActivationDate = service.ActivationDate,
-                    DeactivationDate = service.DeactivationDate // будет null
+                    DeactivationDate = service.DeactivationDate 
                 })
                 .ToList();
 
@@ -87,12 +83,12 @@ namespace gos.services
             if (existingApp == null)
                 throw new ArgumentException("Заявление не найдено");
 
-            // Обновляем нужные поля
+            // Обновляем поля
             existingApp.Status = application.Status;
             existingApp.Result = application.Result;
             existingApp.ClosureDate = DateTime.Now;
 
-            // Сохраняем изменения
+            // Сохраняем
             await _applicationRepository.UpdateAsync(existingApp);
         }
 

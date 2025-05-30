@@ -24,7 +24,6 @@ namespace gos.services
             _authSession = authSession;
         }
 
-        // Метод для обновления данных пользователя
         public async Task UpdateUserDataAsync(string fullName, string password)
         {
             var user = _authSession.CurrentUser ?? throw new UnauthorizedAccessException("User not authenticated.");
@@ -33,13 +32,12 @@ namespace gos.services
 
             user.FullName = fullName;
 
-            // Если пароль не пустой, обновляем его
             if (!string.IsNullOrWhiteSpace(password))
             {
                 user.Password = password;
             }
 
-            await _userRepository.UpdateAsync(user); // Асинхронное обновление данных пользователя в репозитории
+            await _userRepository.UpdateAsync(user); 
         }
     }
 

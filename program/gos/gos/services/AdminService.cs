@@ -11,7 +11,6 @@ namespace gos.services
 {
     public interface IAdminService
     {
-        //bool IsAdmin();
         Task<List<ServiceDTO>> GetAllServicesAsync();
         Task<Service> CreateServiceAsync(ServiceDTO serviceDTO);
         Task<Service> UpdateServiceAsync(ServiceDTO serviceDTO);
@@ -34,27 +33,21 @@ namespace gos.services
         private readonly IServiceRepository _serviceRepository;
         private readonly IRuleRepository _ruleRepository;
         private readonly IParameterTypeRepository _parameterTypeRepository;
-        private readonly AuthSession _authSession;  // Внедрение AuthSession
+        private readonly AuthSession _authSession;
 
         public AdminService(
             IUserRepository userRepository,
             IServiceRepository serviceRepository,
             IRuleRepository ruleRepository,
             IParameterTypeRepository parameterTypeRepository,
-            AuthSession authSession)  // Инициализация через DI
+            AuthSession authSession)
         {
             _userRepository = userRepository;
             _serviceRepository = serviceRepository;
             _ruleRepository = ruleRepository;
             _parameterTypeRepository = parameterTypeRepository;
-            _authSession = authSession;  // Инициализация через DI
+            _authSession = authSession;
         }
-
-        /*public bool IsAdmin()
-        {
-            // Используем экземпляр _authSession вместо статического свойства
-            return _authSession.CurrentUser?.Role == UserRole.ADMIN;
-        }*/
 
         public async Task<List<ServiceDTO>> GetAllServicesAsync()
         {
@@ -69,7 +62,6 @@ namespace gos.services
                     DeactivationDate = pt.DeactivationDate,
                 })
                 .ToList();
-              // Получаем все услуги через сервисный репозиторий
         }
 
         public async Task<Service> CreateServiceAsync(ServiceDTO serviceDTO)
@@ -115,15 +107,8 @@ namespace gos.services
                 })
                 .ToList();
 
-            // Получаем правила для услуги
         }
 
-        //НЕ ПОНЯТНО ЗАЧЕМ ЭТОТ МЕТОД
-        /*public async Task AddRuleToServiceAsync(int serviceId, Rule rule)
-        {
-            rule.ServiceId = serviceId;
-            await _ruleRepository.AddAsync(rule);
-        }*/
 
         public async Task AddRuleAsync(RuleDTO ruleDTO)
         {
@@ -188,12 +173,12 @@ namespace gos.services
             // Получаем все текущие типы из репозитория
             var existingEntities = await _parameterTypeRepository.GetAllAsync();
 
-            // 1. Обновляем и добавляем новые
+            //Обновляем и добавляем новые
             foreach (var dto in updatedDtos)
             {
                 if (dto.Id == 0)
                 {
-                    // Новый элемент — создаём
+                    //Новый элемент
                     var newEntity = new ParameterType
                     {
                         Name = dto.Name,
@@ -203,7 +188,7 @@ namespace gos.services
                 }
                 else
                 {
-                    // Существующий элемент — обновляем
+                    // Существующий обновляем
                     var existing = existingEntities.FirstOrDefault(e => e.Id == dto.Id);
                     if (existing != null)
                     {
@@ -213,8 +198,7 @@ namespace gos.services
                     }
                     else
                     {
-                        // Если Id не найден, можно добавить или бросить ошибку (зависит от логики)
-                        // Например, добавим как новый:
+                        // Если Id не найден, можно добавить
                         var newEntity = new ParameterType
                         {
                             Name = dto.Name,
@@ -225,7 +209,7 @@ namespace gos.services
                 }
             }
 
-            // 2. Удаляем отсутствующие (те, у кого Id нет в updatedDtos)
+            // Удаляем отсутствующие (те, у кого Id нет в updatedDtos)
             var updatedIds = updatedDtos.Where(d => d.Id != 0).Select(d => d.Id).ToHashSet();
 
             var toDelete = existingEntities.Where(e => !updatedIds.Contains(e.Id)).ToList();
@@ -246,7 +230,7 @@ namespace gos.services
             {
                 if (dto.Id == 0)
                 {
-                    // Новый элемент — создаём
+                    // Новый создаём
                     var newEntity = new Service
                     {
                         Name = dto.Name,
@@ -258,7 +242,7 @@ namespace gos.services
                 }
                 else
                 {
-                    // Существующий элемент — обновляем
+                    // Существующий обновляем
                     var existing = existingEntities.FirstOrDefault(e => e.Id == dto.Id);
                     if (existing != null)
                     {
@@ -266,12 +250,10 @@ namespace gos.services
                         existing.Description = dto.Description;
                         existing.DeactivationDate = dto.DeactivationDate;
 
-                        // ActivationDate не меняем
                         await _serviceRepository.UpdateAsync(existing);
                     }
                     else
                     {
-                        // Если Id не найден — добавляем как новый
                         var newEntity = new Service
                         {
                             Name = dto.Name,

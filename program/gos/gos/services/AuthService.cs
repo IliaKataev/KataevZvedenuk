@@ -19,23 +19,22 @@ namespace gos.services
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
-        private readonly AuthSession _authSession; // Внедрение AuthSession
+        private readonly AuthSession _authSession;
 
         public AuthService(IUserRepository userRepository, AuthSession authSession)
         {
             _userRepository = userRepository;
-            _authSession = authSession; // Инициализация через DI
+            _authSession = authSession;
         }
 
         public async Task<User?> TryLoginAsync(string login, string password)
         {
-            // Получаем пользователя по логину
             var user = await _userRepository.GetByLoginAsync(login);
 
             // Если пароль совпадает — авторизация успешна
             if (user != null && user.Password == password)
             {
-                _authSession.CurrentUser = user;  // Доступ через экземпляр
+                _authSession.CurrentUser = user; 
                 return user;
             }
 
@@ -49,7 +48,6 @@ namespace gos.services
             if (user == null)
                 throw new UnauthorizedAccessException("Пользователь не авторизован.");
 
-            // Актуализация пользователя из БД (если нужно)
             var updatedUser = await _userRepository.GetByIdAsync(user.Id);
             return updatedUser ?? throw new Exception("Пользователь не найден в базе данных.");
         }
@@ -57,7 +55,7 @@ namespace gos.services
         public void Logout()
         {
             // Удаляем текущего пользователя из сессии
-            _authSession.CurrentUser = null; // Доступ через экземпляр
+            _authSession.CurrentUser = null;
         }
     }
 

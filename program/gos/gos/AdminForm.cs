@@ -12,7 +12,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace gos
 {
@@ -27,12 +26,19 @@ namespace gos
             _adminController = adminController;
             _currentUser = currentUser;
 
-            this.Load += AdminForm_Load; // Подписка на событие загрузки формы
+            this.Load += AdminForm_Load;
+            this.FormClosed += AdminForm_FormClosed;
+
         }
 
         private void AdminForm_Load(object sender, EventArgs e)
         {
             labelWelcome.Text = $"Добро пожаловать, {_currentUser.FullName}!";
+        }
+
+        private void AdminForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            System.Windows.Forms.Application.Exit();
         }
 
 
@@ -153,7 +159,7 @@ namespace gos
                 // Получаем DTO из контроллера
                 var dtos = (await _adminController.GetParameterTypesAsync()).ToList();
 
-                // Создаем список кортежей с Name и Type (без Id)
+                // Создаем список с Name и Type
                 List<(string Name, string Type)> parameters = dtos
                     .Select(d => (d.Name, d.Type))
                     .ToList();
@@ -262,28 +268,18 @@ namespace gos
 
                 btnSave.Click += async (s, ev) =>
                 {
-                    // Здесь вызываем контроллер, передавая DTO, которые он сформирует сам из параметров
                     await SaveParameterTypes(parameters);
                     editForm.Close();
                 };
-
-                // дважды вызывается один и тот же метод одновременно
-                /*if (editForm.ShowDialog(this) == DialogResult.OK)
-                {
-                    // Можно тут тоже сохранить, если btnSave не нажали
-                    await SaveParameterTypesThroughController(parameters);
-                }*/
 
                 editForm.ShowDialog(this);
             }
         }
 
-        // Метод для передачи параметров контроллеру, где уже формируются DTO и сохраняются
         private async Task SaveParameterTypes(List<(string Name, string Type)> parameters)
         {
             try
             {
-                // Передаем список в контроллер — контроллер создаст DTO и обновит через сервис
                 await _adminController.ReplaceAllParameterTypesAsync(parameters);
                 MessageBox.Show("Список успешно обновлён.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -487,9 +483,9 @@ namespace gos
 
                     listBoxServices.Items.Add(newService.Name);
 
-                    await _adminController.ReplaceAllServicesAsync(services); // если нужно — сохраняем услуги
+                    await _adminController.ReplaceAllServicesAsync(services);
 
-                    await RefreshServices(); // обновляем локальный список и UI
+                    await RefreshServices(); // обновляем список 
 
                     int newIndex = services.FindIndex(s => s.Name == newService.Name && s.Description == newService.Description);
                     if (newIndex >= 0)
@@ -510,14 +506,14 @@ namespace gos
                             return;
                         }
 
-                        int serviceId = services[idx].Id; // Сохраняем ID
+                        int serviceId = services[idx].Id;
 
                         services[idx].Name = textBoxName.Text.Trim();
                         services[idx].Description = textBoxDesc.Text.Trim();
 
-                        await _adminController.ReplaceAllServicesAsync(services); // если нужно — сохраняем услуги
+                        await _adminController.ReplaceAllServicesAsync(services); 
 
-                        await RefreshServices(); // обновляем локальный список и UI
+                        await RefreshServices();
 
                         int newIndex = services.FindIndex(s => s.Name == services[idx].Name && s.Description == services[idx].Description);
                         if (newIndex >= 0)
@@ -531,7 +527,7 @@ namespace gos
                 {
                     int idx = listBoxServices.SelectedIndex;
 
-                    // Найдем нужную услугу по Id
+                    // Найти нужную услугу по Id
                     if (idx >= 0)
                     {
                         if (services[idx].DeactivationDate != null && services[idx].DeactivationDate > DateOnly.MinValue)
@@ -547,7 +543,6 @@ namespace gos
                         await _adminController.ReplaceAllServicesAsync(services);
                         await RefreshServices();
 
-                        //сбрасываем самостоятельно
                         listBoxRules.Items.Clear();
                         textBoxName.Clear();
                         textBoxDesc.Clear();
@@ -588,7 +583,7 @@ namespace gos
                         var rules = (List<RuleDTO>)listBoxRules.Tag;
                         var ruleToEdit = rules[idx];
 
-                        // Показываем панель редактирования с текущими значениями
+                        // Показываем панель с  текущими данными
                         labelRuleValue.Visible = textBoxRuleValue.Visible =
                         labelOperator.Visible = comboBoxOperator.Visible =
                         labelRuleType.Visible = comboBoxParameterTypes.Visible =
@@ -599,10 +594,8 @@ namespace gos
                         comboBoxOperator.SelectedItem = ruleToEdit.ComparisonOperator;
                         comboBoxParameterTypes.SelectedValue = ruleToEdit.NeededTypeId;
 
-                        // Заполняем срок
                         textBoxDeadlineDays.Text = ruleToEdit.DeadlineDays?.ToString() ?? "";
 
-                        // Временно сохраняем редактируемое правило в Tag
                         btnSaveRule.Tag = ruleToEdit;
                     }
                 };
@@ -625,7 +618,6 @@ namespace gos
                     }
                 };
 
-                // Сохранение правила
                 btnSaveRule.Click += async (s, ev) =>
                 {
                     int serviceIdx = listBoxServices.SelectedIndex;
@@ -694,14 +686,14 @@ namespace gos
                     comboBoxOperator.SelectedIndex = -1;
                     comboBoxParameterTypes.SelectedIndex = -1;
 
-                    // (Опционально) Скрываем кнопку отмены
+                    // Скрываем кнопку отмены
                     btnCancelRule.Visible = false;
                 };
 
 
                 btnOk.Click += async (s, ev) =>
                 {
-                    await _adminController.ReplaceAllServicesAsync(services); // если нужно — сохраняем услуги
+                    await _adminController.ReplaceAllServicesAsync(services); 
                 };
 
                 editForm.ShowDialog(this);

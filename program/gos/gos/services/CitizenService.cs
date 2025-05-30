@@ -12,7 +12,6 @@ namespace gos.services
 {
     public interface ICitizenService
     {
-        //bool IsCitizen();
         string GetPersonalData();
         Task<List<Parameter>> GetParametersAsync();
         Task<Parameter> AddParameterAsync(ParameterDTO parameterDTO);
@@ -52,11 +51,6 @@ namespace gos.services
             _authSession = authSession;
         }
 
-        /*public bool IsCitizen()
-        {
-            var user = _authSession.CurrentUser;  // Использование экземпляра _authSession
-            return user != null && !user.Login.StartsWith("admin") && !user.Login.StartsWith("gov_");
-        }*/
 
         
         public string GetPersonalData()
@@ -146,7 +140,7 @@ namespace gos.services
                     Name = service.Name,
                     Description = service.Description,
                     ActivationDate = service.ActivationDate,
-                    DeactivationDate = service.DeactivationDate // будет null
+                    DeactivationDate = service.DeactivationDate
                 })
                 .ToList();
 

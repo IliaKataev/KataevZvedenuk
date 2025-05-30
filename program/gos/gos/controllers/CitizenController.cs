@@ -36,9 +36,6 @@ namespace gos.controllers
             await _userService.UpdateUserDataAsync(fullName, password);
         }
 
-        // Заглушки
-        public string LoadPersonalData() => throw new NotImplementedException();
-
         public async Task<List<ParameterTypeDTO>> LoadParameterTypesAsync()
         {
             var types = await _citizenService.GetParameterTypesAsync();

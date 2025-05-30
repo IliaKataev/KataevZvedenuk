@@ -131,7 +131,7 @@ namespace gos.services
                     app.Result = $"Пройдена группа правил с DeadlineDays = {deadlineDays ?? 0}:\n" +
                                  string.Join("\n", successfulGroup.Select(r =>
                                      $"- Тип: {r.NeededType.Type}, Условие: {r.ComparisonOperator} {r.Value}"));
-                    app.ClosureDate = null; // Заявка в процессе выполнения
+                    app.ClosureDate = DateTime.Now;
                 }
             }
             else
@@ -172,7 +172,7 @@ namespace gos.services
                 };
             }
 
-            // Строковое сравнение без учёта регистра
+            // Тут сравниваем строки без регистра
             return op switch
             {
                 "=" or "==" => string.Equals(userValue, ruleValue, StringComparison.OrdinalIgnoreCase),

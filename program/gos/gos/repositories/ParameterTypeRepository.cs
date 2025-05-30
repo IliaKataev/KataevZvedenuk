@@ -67,7 +67,7 @@ namespace gos.repositories
         public async Task<List<ParameterType>> GetByServiceIdAsync(int serviceId)
         {
             return await _context.ParameterTypes
-                .Where(pt => pt.Rules.Any(r => r.ServiceId == serviceId))  // Мы ищем те ParameterType, у которых есть связанные правила для данного serviceId
+                .Where(pt => pt.Rules.Any(r => r.ServiceId == serviceId)) 
                 .ToListAsync();
         }
 

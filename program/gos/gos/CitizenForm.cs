@@ -19,13 +19,19 @@ namespace gos
             _citizenController = citizenController;
             _currentUser = currentUser;
 
-            this.Load += CitizenForm_Load;
+            Load += CitizenForm_Load;
+            FormClosed += CitizenForm_Closed;
         }
 
         private async void CitizenForm_Load(object sender, EventArgs e)
         {
             labelWelcome.Text = $"Добро пожаловать, {_currentUser.FullName}!";
             await LoadUserApplicationsAsync();
+        }
+
+        private void CitizenForm_Closed(object sender, FormClosedEventArgs e)
+        {
+            System.Windows.Forms.Application.Exit();
         }
 
         private void BtnEditPersonalData_Click(object sender, EventArgs e)
@@ -208,18 +214,29 @@ namespace gos
                 if (defaultTypeId.HasValue)
                 {
                     var existingItem = types.FirstOrDefault(t => t.Id == defaultTypeId.Value);
+
                     if (existingItem == null)
                     {
                         existingItem = new ParameterTypeDTO { Id = defaultTypeId.Value, Name = $"Удалённый тип ({defaultTypeId.Value})" };
                         types.Add(existingItem);
                     }
 
-                    cmbTypes.DataSource = null; // Обновляем DataSource на всякий случай
-                    cmbTypes.DataSource = types;
+                    cmbTypes.DataSource = null;
+
                     cmbTypes.DisplayMember = "Name";
                     cmbTypes.ValueMember = "Id";
 
+                    cmbTypes.DataSource = types;
+
+                    dialog.Shown += (s, e) =>
+                    {
+                        cmbTypes.SelectedValue = existingItem.Id;
+                    };
+
+
                     cmbTypes.SelectedValue = existingItem.Id;
+                    MessageBox.Show($"Ожидали Id: {existingItem.Id}, выбранный: {cmbTypes.SelectedValue}");
+
                 }
                 else
                 {
@@ -250,30 +267,6 @@ namespace gos
                 return false;
             }
         }
-
-        /*private async Task AddParameterAsync(int typeId, string value)
-        {
-            try
-            {
-                await _citizenController.AddParameterAsync(typeId, value);
-                MessageBox.Show("Параметр успешно добавлен.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                // Можно обновить список параметров на форме, если он есть
-            }
-            catch (Exception ex)
-            {
-                var sb = new StringBuilder();
-                sb.AppendLine("Ошибка при сохранении изменений:");
-
-                Exception current = ex;
-                while (current != null)
-                {
-                    sb.AppendLine(current.Message);
-                    current = current.InnerException;
-                }
-
-                MessageBox.Show(sb.ToString(), "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }*/
 
         private async void buttonAddApplication_Click(object sender, EventArgs e)
         {
@@ -315,7 +308,6 @@ namespace gos
 
                 paramForm.Controls.AddRange(new Control[] { lblService, comboBoxServices, buttonApplyApplication });
 
-                // Загрузим услуги асинхронно (await внутри Invoke, чтобы не блокировать UI)
                 try
                 {
                     var services = await _citizenController.LoadAvailableServices();
@@ -336,7 +328,6 @@ namespace gos
                     return;
                 }
 
-                // Обработчик нажатия на кнопку в дочерней форме
                 buttonApplyApplication.Click += async (s, ev) =>
                 {
                     if (comboBoxServices.SelectedItem is not ServiceDTO selectedService)
@@ -378,7 +369,6 @@ namespace gos
                         ServiceId = selectedService.Id,
                         Status = ApplicationStatus.IN_PROGRESS,
                         CreationDate = DateTime.Now,
-                        //Deadline = DateTime.Now.AddMonths(1) При создании услуги у нас нет дедлайна, дедлайн отображается после обработки госслужащим
                     };
 
                     MessageBox.Show(application.Deadline.ToString());
@@ -406,7 +396,7 @@ namespace gos
 
                 var displayList = applications.Select(app => new
                 {
-                    app.ApplicationId, // <-- добавляем Id для удаления
+                    app.ApplicationId,
                     Услуга = serviceMap.ContainsKey(app.ServiceId) ? serviceMap[app.ServiceId] : "Неизвестно",
                     Создано = app.CreationDate.ToString("dd.MM.yyyy"),
                     Дедлайн = app.Deadline.HasValue ? app.Deadline.Value.ToString("dd.MM.yyyy") : "—",
@@ -416,7 +406,6 @@ namespace gos
 
                 dataGridViewApplications.DataSource = displayList;
 
-                // Сделать столбец ApplicationId скрытым
                 if (dataGridViewApplications.Columns["ApplicationId"] != null)
                     dataGridViewApplications.Columns["ApplicationId"].Visible = false;
             }
@@ -434,7 +423,6 @@ namespace gos
                 return;
             }
 
-            // Получаем Id выбранного заявления
             var idCell = dataGridViewApplications.CurrentRow.Cells["ApplicationId"];
             if (idCell == null || idCell.Value == null)
             {
@@ -450,7 +438,6 @@ namespace gos
 
             try
             {
-                // Вызываем метод удаления из контроллера
                 await _citizenController.CancelMyApplication(applicationId);
 
                 // Обновляем таблицу после удаления

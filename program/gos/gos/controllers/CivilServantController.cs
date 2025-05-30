@@ -1,4 +1,4 @@
-﻿using gos.models.DTO;
+﻿    using gos.models.DTO;
 using gos.models;
 using gos.services;
 using System;
@@ -12,13 +12,11 @@ namespace gos.controllers
     public class CivilServantController
     {
         private readonly ICivilServantService _civilServantService;
-        private readonly IUserService _userService;
         private readonly IApplicationService _applicationService;
 
-        public CivilServantController(ICivilServantService civilServantService, IUserService userService, IApplicationService applicationService)
+        public CivilServantController(ICivilServantService civilServantService, IApplicationService applicationService)
         {
             _civilServantService = civilServantService;
-            _userService = userService;
             _applicationService = applicationService;
         }
 

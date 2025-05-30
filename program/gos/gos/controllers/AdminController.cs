@@ -57,13 +57,11 @@ namespace gos.controllers
         public async Task<List<ParameterTypeDTO>> GetParameterTypesAsync()
         {
             
-            return await _adminService.GetParameterTypesAsync(); // теперь всё корректно
+            return await _adminService.GetParameterTypesAsync();
         }
 
-        // Пример метода в контроллере (вызов из формы):
         public async Task ReplaceAllParameterTypesAsync(List<(string Name, string Type)> parameters)
         {
-            // Здесь создаем DTO с учетом существующих Id (если нужно, получаем текущие из БД)
             var existingDtos = await _adminService.GetParameterTypesAsync();
 
             var updatedDtos = parameters.Select((p, i) =>
@@ -71,7 +69,7 @@ namespace gos.controllers
                 var existing = existingDtos.ElementAtOrDefault(i);
                 return new ParameterTypeDTO
                 {
-                    Id = existing?.Id ?? 0, // 0 - для новых
+                    Id = existing?.Id ?? 0,
                     Name = p.Name,
                     Type = p.Type
                 };
@@ -82,7 +80,6 @@ namespace gos.controllers
 
         public async Task ReplaceAllServicesAsync(List<ServiceDTO> servicesDTO)
         {
-            // Здесь создаем DTO с учетом существующих Id (если нужно, получаем текущие из БД)
             var existingDtos = await _adminService.GetAllServicesAsync();
 
             var updatedDtos = servicesDTO.Select((p, i) =>
@@ -90,7 +87,7 @@ namespace gos.controllers
                 var existing = existingDtos.ElementAtOrDefault(i);
                 return new ServiceDTO
                 {
-                    Id = existing?.Id ?? 0, // 0 - для новых
+                    Id = existing?.Id ?? 0,
                     Name = p.Name,
                     Description = p.Description,
                     ActivationDate = p.ActivationDate,

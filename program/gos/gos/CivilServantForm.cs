@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -26,6 +27,7 @@ namespace gos
             _currentUser = currentUser;
             _controller = controller;
             Load += CivilServantForm_Load;
+            FormClosed += CivilServantForm_Closed;
         }
         private async void CivilServantForm_Load(object sender, EventArgs e)
         {
@@ -33,32 +35,44 @@ namespace gos
             await LoadApplicationsAsync();
         }
 
+        private void CivilServantForm_Closed(object sender, FormClosedEventArgs e)
+        {
+            System.Windows.Forms.Application.Exit();
+        }
+
+
         private async Task LoadApplicationsAsync()
         {
             try
             {
                 var applications = await _controller.LoadApplications();
+
+                foreach (var app in applications)
+                {
+                    Console.WriteLine($"AppId: {app.ApplicationId}, ClosureDate: {app.ClosureDate}");
+                }
+
+
                 var services = await _controller.LoadAvailableServices();
                 var serviceMap = services.ToDictionary(s => s.Id, s => s.Name);
 
-                // Фильтруем заявки (исключаем Canceled)
+                // исключаем Canceled
                 var filteredApplications = applications
                     .Where(app => app.Status != ApplicationStatus.CANCELED)
                     .ToList();
 
-                // Формируем displayList
                 var displayList = filteredApplications.Select(app => new
                 {
-                    app.ApplicationId, // для скрытого столбца
+                    app.ApplicationId, 
                     Услуга = serviceMap.ContainsKey(app.ServiceId) ? serviceMap[app.ServiceId] : "Неизвестно",
                     Создано = app.CreationDate.ToString("dd.MM.yyyy"),
                     Дедлайн = app.Deadline.HasValue ? app.Deadline.Value.ToString("dd.MM.yyyy") : "—",
                     Статус = app.Status.ToString(),
                     Результат = app.Result ?? "—",
-                    Закрыто =
-                        app.Status == ApplicationStatus.REJECTED && app.ClosureDate.HasValue
+                    Закрыто = app.ClosureDate.HasValue
                             ? app.ClosureDate.Value.ToString("dd.MM.yyyy")
-                            : (app.ClosureDate.HasValue ? app.ClosureDate.Value.ToString("dd.MM.yyyy") : "—")
+                            : "—"
+                    
                 }).ToList();
 
                 dataGridViewApplications.DataSource = displayList;
@@ -96,7 +110,6 @@ namespace gos
                 return;
             }
 
-            // Создание модального окна
             using (Form processForm = new Form())
             {
                 processForm.Text = "Обработка заявления";
@@ -137,7 +150,6 @@ namespace gos
                     Text = application.Result ?? ""
                 };
 
-                // Затычка кнопки "Обработать"
                 var buttonProcess = new Button()
                 {
                     Text = "Обработать (затычка)",
@@ -152,7 +164,7 @@ namespace gos
                     if (selectedStatus == ApplicationStatus.REJECTED)
                     {
                         application.ClosureDate = DateTime.Now;
-                        // Обновляем на форме отображение даты закрытия (например, label или другое поле)
+                        // Обновляем на форме отображение даты закрытия
                         labelInfo.Text = $"ID: {application.ApplicationId}\n" +
                                          $"Услуга ID: {application.ServiceId}\n" +
                                          $"Создано: {application.CreationDate:dd.MM.yyyy}\n" +
@@ -185,7 +197,6 @@ namespace gos
                         comboBoxStatus.SelectedValue = application.Status;
                         textBoxResult.Text = application.Result ?? "";
 
-                        // Обновление текста в labelInfo (если нужно сразу показать результат)
                         labelInfo.Text = $"ID: {application.ApplicationId}\n" +
                                          $"Услуга ID: {application.ServiceId}\n" +
                                          $"Создано: {application.CreationDate:dd.MM.yyyy}\n" +
@@ -193,7 +204,7 @@ namespace gos
                                          $"Статус: {application.Status}\n" +
                                          $"Результат: {application.Result ?? "—"}\n" +
                                          $"Закрыто: {(application.ClosureDate.HasValue ? application.ClosureDate.Value.ToString("dd.MM.yyyy") : "—")}";
-
+                        MessageBox.Show(application.ClosureDate.Value.ToString("dd.MM.yyyy"));
                         applications = await RefreshApplicationsAsync(serviceMap);
 
                     }
@@ -230,7 +241,6 @@ namespace gos
 
                 processForm.Controls.AddRange(new Control[] { labelInfo, textBoxResult, buttonProcess, buttonSave, comboBoxStatus });
 
-                // После добавления всех контролов
                 processForm.Shown += (_, __) =>
                 {
                     comboBoxStatus.SelectedValue = application.Status;
@@ -263,7 +273,6 @@ namespace gos
 
                 };
 
-                // Показываем модально
                 if (processForm.ShowDialog() == DialogResult.OK)
                 {
                     await LoadApplicationsAsync(); // обновить таблицу после сохранения

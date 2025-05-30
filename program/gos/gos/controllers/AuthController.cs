@@ -24,8 +24,8 @@ namespace gos.controllers
             var user = await _authService.TryLoginAsync(login, password);
             if (user != null)
             {
-                _currentUser = user; // Сохраняем модель User
-                                     // Маппинг User в UserDTO:
+                _currentUser = user; 
+
                 var userDto = new UserDTO
                 {
                     Id = user.Id,
@@ -42,9 +42,6 @@ namespace gos.controllers
             }
         }
 
-
-
-        // Если нужно — можно очистить _currentUser в логике Logout
         public void Logout()
         {
             _currentUser = null;
