@@ -28,10 +28,6 @@ public partial class AppDbContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            //ьУДАЛИТЬ: устаревшая ручная настройка enum
-            // NpgsqlConnection.GlobalTypeMapper.EnableUnmappedTypes();
-            // NpgsqlConnection.GlobalTypeMapper.MapEnum<UserRole>("public.user_role");
-
             optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=gosuslugi;Username=postgres;Password=1111");
         }
     }

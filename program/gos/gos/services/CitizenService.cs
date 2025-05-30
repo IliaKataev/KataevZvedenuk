@@ -113,7 +113,8 @@ namespace gos.services
                 ServiceId = a.ServiceId,
                 Status = a.Status,
                 CreationDate = a.CreationDate,
-                Deadline = a.Deadline
+                Deadline = a.Deadline,
+                Result = a.Result
             }).ToList();
         }
 

@@ -21,8 +21,6 @@ namespace gos
         private readonly UserDTO _currentUser;
         public CivilServantForm(CivilServantController controller, UserDTO currentUser)
         {
-
-
             InitializeComponent();
             _currentUser = currentUser;
             _controller = controller;
@@ -152,7 +150,7 @@ namespace gos
 
                 var buttonProcess = new Button()
                 {
-                    Text = "Обработать (затычка)",
+                    Text = "Обработать",
                     Location = new Point(20, 365),
                     Width = 150,
                     Height = 40
