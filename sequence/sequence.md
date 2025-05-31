@@ -5,7 +5,7 @@
 
 **1. Диаграмма последовательности: Вход в систему (администратор)**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/admin/adminLogin.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/6e680b78466ca8f4a91b0134078dfe8896404a8b/sequence/images/admin/adminLogin2.png)
 
 **Основной сценарий:**
 1. Администратор отправляет логин и пароль в `AuthController`.
@@ -37,7 +37,7 @@
 
 **2. Диаграмма последовательности: Взаимодействие с услугой**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/admin/adminAddUpdateDeleteService.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/6e680b78466ca8f4a91b0134078dfe8896404a8b/sequence/images/admin/adminService2.png)
 
 **Основной сценарий:**
 1. Администратор отправляет данные о новой услуге (название, описание, правила и др.) в `AdminController`.
@@ -64,7 +64,7 @@
 
 **3. Диаграмма последовательности: Создание учетной записи**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/admin/adminCreateUser.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/6e680b78466ca8f4a91b0134078dfe8896404a8b/sequence/images/admin/adminCreateUser2.png)
 
 **Основной сценарий:**
 1. Администратор отправляет данные нового пользователя (`username`, `password`, `role` и др.) в `AdminController`.
@@ -93,7 +93,7 @@
 
 **1. Диаграмма последовательности: Создание новой заявки**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/citizen/citizenAddApplication.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/6e680b78466ca8f4a91b0134078dfe8896404a8b/sequence/images/citizen/citizenAddApplication2.png)
 
 **Основной сценарий:**
 1. Пользователь отправляет запрос на создание новой заявки через `CitizenController`, передавая `serviceId` и `parameters`.
@@ -121,7 +121,7 @@
 
 **2. Диаграмма последовательности: Вход в систему гражданина**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/citizen/citizenLogin.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/6e680b78466ca8f4a91b0134078dfe8896404a8b/sequence/images/citizen/citizenLogin2.png)
 
 **Основной сценарий:**
 1. Гражданин отправляет запрос на авторизацию в `AuthController` с `login` и `password`.
@@ -210,7 +210,7 @@
 
 ### **1. Диаграмма последовательности: Вход в систему (Госслужащий)**
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/eb31f887824116c2085350650e35df56620217f8/sequence/images/servant/servantLogin.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/6e680b78466ca8f4a91b0134078dfe8896404a8b/sequence/images/servant/servantLogin2.png)
 
 1. **Запрос на вход:**
    - Госслужащий инициирует вход в систему, отправляя запрос с логином и паролем через `AuthController` методом `Login(login, password)`.
