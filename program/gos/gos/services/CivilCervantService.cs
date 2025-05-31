@@ -12,9 +12,7 @@ namespace gos.services
 {
     public interface ICivilServantService
     {
-        //bool IsCivilServant();
         Task<List<ApplicationDTO>> GetMyApplications();
-        //Task<models.Application?> GetApplicationDetails(int applicationId);
         Task ChangeStatus(ApplicationDTO application);
         Task ProcessApplication(int applicationId, string result);
         Task<List<ServiceDTO>> GetAvailableServices();
@@ -70,12 +68,6 @@ namespace gos.services
 
             return availableServices;
         }
-
-
-        /*public async Task<models.Application?> GetApplicationDetails(int applicationId)
-        {
-            return await _applicationRepository.GetById(applicationId);
-        }*/
 
         public async Task ChangeStatus(ApplicationDTO application)
         {

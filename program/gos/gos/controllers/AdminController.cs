@@ -39,21 +39,6 @@ namespace gos.controllers
             await _adminService.CreateUser(_userDTO);
         }
 
-        /*public async Task CreateParameterType(string type, string name)
-        {
-            var user = _authService.GetCurrentUser();
-            if (user == null)
-                throw new UnauthorizedAccessException("Пользователь не авторизован");
-
-            var _parType = new ParameterTypeDTO
-            {
-                Type = type,
-                Name = name
-            };
-
-            await _adminService.CreateParameterType(_parType);
-        }*/
-
         public async Task<List<ParameterTypeDTO>> GetParameterTypes()
         {
             
@@ -98,11 +83,6 @@ namespace gos.controllers
             await _adminService.ReplaceAllServices(updatedDtos);
         }
 
-        /*public async Task DeleteParameterType(int id)
-        {
-            await _adminService.DeleteParameterType(id);
-        }*/
-
         public async Task<List<ServiceDTO>> GetAllServices()
         {
             return await _adminService.GetAllServices();
@@ -112,12 +92,6 @@ namespace gos.controllers
         {
             return await _adminService.GetRulesForService(serviceId);
         }
-
-        /*public async Task SaveService(ServiceDTO serviceDto)
-        {
-            await _adminService.CreateService(serviceDto);
-        }*/
-
         public async Task AddRule(RuleDTO ruleDTO)
         {
             await _adminService.AddRule(ruleDTO);

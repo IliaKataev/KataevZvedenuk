@@ -20,7 +20,6 @@ namespace gos.services
     {
         private readonly IApplicationRepository _applicationRepository;
         private readonly IUserRepository _userRepository;
-        //private readonly IServiceRepository _serviceRepository;
         private readonly IRuleRepository _ruleRepository;
 
         public ApplicationService(
@@ -31,7 +30,6 @@ namespace gos.services
         {
             _applicationRepository = applicationRepository;
             _userRepository = userRepository;
-            //_serviceRepository = serviceRepository;
             _ruleRepository = ruleRepository;
         }
 
