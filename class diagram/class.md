@@ -2,7 +2,7 @@
 ## **Диаграмма классов**
 
 
-![](https://github.com/IliaKataev/KataevZvedenuk/blob/403b74b9ae5b93b07fcca6334d7e27449c0bc61e/class%20diagram/cd.png)
+![](https://github.com/IliaKataev/KataevZvedenuk/blob/88771babdadcbb5468181750134942131b9bf646/class%20diagram/dc.png)
 
 ---
 
