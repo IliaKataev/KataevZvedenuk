@@ -12,15 +12,15 @@ namespace gos.services
     public interface IAdminService
     {
         Task<List<ServiceDTO>> GetAllServices();
-        Task<Service> CreateService(ServiceDTO serviceDTO);
-        Task<Service> UpdateService(ServiceDTO serviceDTO);
+        //Task<Service> CreateService(ServiceDTO serviceDTO);
+        //Task<Service> UpdateService(ServiceDTO serviceDTO);
         Task<List<RuleDTO>> GetRulesForService(int serviceId);
         Task AddRule(RuleDTO ruleDTO);
         Task UpdateRule(RuleDTO ruleDTO);
         Task DeleteRule(int ruleId);
         Task<List<ParameterTypeDTO>> GetParameterTypes();
-        Task<ParameterType> CreateParameterType(ParameterTypeDTO parameterTypeDTO);
-        Task DeleteParameterType(int typeId);
+        //Task<ParameterType> CreateParameterType(ParameterTypeDTO parameterTypeDTO);
+        //Task DeleteParameterType(int typeId);
         Task<User> CreateUser(UserDTO userDTO);
         Task ReplaceAllParameterTypes(List<ParameterTypeDTO> updatedDtos);
         Task ReplaceAllServices(List<ServiceDTO> updatedDtos);
@@ -64,7 +64,7 @@ namespace gos.services
                 .ToList();
         }
 
-        public async Task<Service> CreateService(ServiceDTO serviceDTO)
+        /*public async Task<Service> CreateService(ServiceDTO serviceDTO)
         {
             var service = new Service
             {
@@ -75,9 +75,9 @@ namespace gos.services
 
             await _serviceRepository.Add(service);
             return service;
-        }
+        }*/
 
-        public async Task<Service> UpdateService(ServiceDTO serviceDTO)
+        /*public async Task<Service> UpdateService(ServiceDTO serviceDTO)
         {
             var service = await _serviceRepository.GetById(serviceDTO.Id);
             if (service == null) throw new ArgumentException("Service not found.");
@@ -89,7 +89,7 @@ namespace gos.services
 
             await _serviceRepository.Update(service);
             return service;
-        }
+        }*/
 
         public async Task<List<RuleDTO>> GetRulesForService(int serviceId)
         {
@@ -156,7 +156,7 @@ namespace gos.services
                 .ToList();
         }
 
-        public async Task<ParameterType> CreateParameterType(ParameterTypeDTO parameterTypeDTO)
+        /*public async Task<ParameterType> CreateParameterType(ParameterTypeDTO parameterTypeDTO)
         {
             var parameterType = new ParameterType
             {
@@ -166,7 +166,7 @@ namespace gos.services
 
             await _parameterTypeRepository.Add(parameterType);
             return parameterType;
-        }
+        }*/
 
         public async Task ReplaceAllParameterTypes(List<ParameterTypeDTO> updatedDtos)
         {
@@ -267,11 +267,10 @@ namespace gos.services
             }        
         }
 
-
-        public async Task DeleteParameterType(int typeId)
+       /* public async Task DeleteParameterType(int typeId)
         {
             await _parameterTypeRepository.Delete(typeId);
-        }
+        }*/
 
         public async Task<User> CreateUser(UserDTO userDTO)
         {

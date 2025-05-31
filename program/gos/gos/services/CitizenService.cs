@@ -12,7 +12,7 @@ namespace gos.services
 {
     public interface ICitizenService
     {
-        string GetPersonalData();
+        //string GetPersonalData();
         Task<List<Parameter>> GetParameters();
         Task<Parameter> AddParameter(ParameterDTO parameterDTO);
         Task UpdateParameter(int parameterId, ParameterDTO parameterDTO);
@@ -53,11 +53,11 @@ namespace gos.services
 
 
         
-        public string GetPersonalData()
+        /*public string GetPersonalData()
         {
             var user = _authSession.CurrentUser ?? throw new UnauthorizedAccessException();
             return $"Имя: {user.FullName}, Логин: {user.Login}";
-        }
+        }*/
 
         public async Task<List<ParameterType>> GetParameterTypes()
         {
