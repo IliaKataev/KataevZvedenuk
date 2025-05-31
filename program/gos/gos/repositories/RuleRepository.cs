@@ -10,11 +10,11 @@ namespace gos.repositories
 {
     public interface IRuleRepository
     {
-        Task AddAsync(Rule rule);
-        Task UpdateAsync(Rule rule);
-        Task DeleteAsync(int ruleId);
-        Task<Rule?> GetByIdAsync(int ruleId);
-        Task<List<Rule>> GetByServiceIdAsync(int serviceId);
+        Task Add(Rule rule);
+        Task Update(Rule rule);
+        Task Delete(int ruleId);
+        Task<Rule?> GetById(int ruleId);
+        Task<List<Rule>> GetByServiceId(int serviceId);
     }
 
     public class RuleRepository : IRuleRepository
@@ -26,19 +26,19 @@ namespace gos.repositories
             _context = context;
         }
 
-        public async Task AddAsync(Rule rule)
+        public async Task Add(Rule rule)
         {
             await _context.Rules.AddAsync(rule);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Rule rule)
+        public async Task Update(Rule rule)
         {
             _context.Rules.Update(rule);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int ruleId)
+        public async Task Delete(int ruleId)
         {
             var rule = await _context.Rules.FindAsync(ruleId);
             if (rule != null)
@@ -48,14 +48,14 @@ namespace gos.repositories
             }
         }
 
-        public async Task<Rule?> GetByIdAsync(int ruleId)
+        public async Task<Rule?> GetById(int ruleId)
         {
             return await _context.Rules
                 .Include(r => r.Service)
                 .Include(r => r.NeededType)
                 .FirstOrDefaultAsync(r => r.Id == ruleId);
         }
-        public async Task<List<Rule>> GetByServiceIdAsync(int serviceId)
+        public async Task<List<Rule>> GetByServiceId(int serviceId)
         {
             return await _context.Rules
                 .Include(r => r.Service)

@@ -11,11 +11,11 @@ namespace gos.repositories
 {
     public interface IUserRepository
     {
-        Task<User?> GetByIdAsync(int id);
-        Task<User?> GetByLoginAsync(string login);
-        Task<List<Parameter>> GetParametersAsync(int userId);
-        Task AddAsync(User user);
-        Task UpdateAsync(User user);
+        Task<User?> GetById(int id);
+        Task<User?> GetByLogin(string login);
+        Task<List<Parameter>> GetParameters(int userId);
+        Task Add(User user);
+        Task Update(User user);
     }
 
 
@@ -29,7 +29,7 @@ namespace gos.repositories
             _context = context;
         }
 
-        public async Task<User?> GetByIdAsync(int id)
+        public async Task<User?> GetById(int id)
         {
             return await _context.Users
                 .Include(u => u.Applications)
@@ -37,7 +37,7 @@ namespace gos.repositories
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public async Task<User?> GetByLoginAsync(string login)
+        public async Task<User?> GetByLogin(string login)
         {
             return await _context.Users
                 .Include(u => u.Applications)
@@ -45,20 +45,20 @@ namespace gos.repositories
                 .FirstOrDefaultAsync(u => u.Login == login);
         }
 
-        public async Task<List<Parameter>> GetParametersAsync(int userId)
+        public async Task<List<Parameter>> GetParameters(int userId)
         {
             return await _context.Parameters
                 .Where(p => p.UserId == userId)
                 .ToListAsync();
         }
 
-        public async Task AddAsync(User user)
+        public async Task Add(User user)
         {
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(User user)
+        public async Task Update(User user)
         {
             _context.Users.Update(user);
 

@@ -11,9 +11,9 @@ namespace gos.services
 {
     public interface IApplicationService
     {
-        Task<models.Application> CreateNewApplicationAsync(int userId, ApplicationDTO applicationDTO);
+        Task<models.Application> CreateNewApplication(int userId, ApplicationDTO applicationDTO);
         Task CancelApplicationAsync(models.Application application);
-        Task<ApplicationDTO> ProcessApplicationAsync(int applicationId, int serviceId);
+        Task<ApplicationDTO> ProcessApplication(int applicationId, int serviceId);
     }
 
     public class ApplicationService : IApplicationService
@@ -35,7 +35,7 @@ namespace gos.services
             _ruleRepository = ruleRepository;
         }
 
-        public async Task<models.Application> CreateNewApplicationAsync(int userId, ApplicationDTO applicationDTO)
+        public async Task<models.Application> CreateNewApplication(int userId, ApplicationDTO applicationDTO)
         {
             var application = new models.Application
             {
@@ -48,7 +48,7 @@ namespace gos.services
                 Deadline = applicationDTO.Deadline,
             };
 
-            await _applicationRepository.AddAsync(application);
+            await _applicationRepository.Add(application);
             return application;
         }
 
@@ -57,19 +57,19 @@ namespace gos.services
             if (application.ClosureDate != null)
                 throw new InvalidOperationException("Нельзя отменить уже закрытую заявку.");
 
-            await _applicationRepository.DeleteAsync(application.Id);
+            await _applicationRepository.Delete(application.Id);
         }
 
-        public async Task<ApplicationDTO> ProcessApplicationAsync(int applicationId, int serviceId)
+        public async Task<ApplicationDTO> ProcessApplication(int applicationId, int serviceId)
         {
-            var app = await _applicationRepository.GetByIdAsync(applicationId)
+            var app = await _applicationRepository.GetById(applicationId)
                 ?? throw new ArgumentException("Заявление не найдено");
 
-            var user = await _userRepository.GetByIdAsync(app.UserId)
+            var user = await _userRepository.GetById(app.UserId)
                 ?? throw new ArgumentException("Пользователь не найден");
 
-            var userParams = await _userRepository.GetParametersAsync(user.Id);
-            var rules = await _ruleRepository.GetByServiceIdAsync(serviceId);
+            var userParams = await _userRepository.GetParameters(user.Id);
+            var rules = await _ruleRepository.GetByServiceId(serviceId);
 
             var ruleGroups = rules.GroupBy(r => r.DeadlineDays ?? -1);
 
@@ -143,7 +143,7 @@ namespace gos.services
             }
 
 
-            await _applicationRepository.UpdateAsync(app);
+            await _applicationRepository.Update(app);
             return new ApplicationDTO
             {
                 ApplicationId = app.Id,

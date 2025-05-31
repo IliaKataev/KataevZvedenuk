@@ -26,7 +26,7 @@ namespace gos
         private async void CitizenForm_Load(object sender, EventArgs e)
         {
             labelWelcome.Text = $"Добро пожаловать, {_currentUser.FullName}!";
-            await LoadUserApplicationsAsync();
+            await LoadUserApplications();
         }
 
         private void CitizenForm_Closed(object sender, FormClosedEventArgs e)
@@ -124,7 +124,7 @@ namespace gos
                 List<ParameterDTO> parameters = await _citizenController.LoadParameters();
 
                 // Загрузка типов
-                List<ParameterTypeDTO> types = await _citizenController.LoadParameterTypesAsync();
+                List<ParameterTypeDTO> types = await _citizenController.LoadParameterTypes();
 
                 void RefreshList()
                 {
@@ -149,7 +149,7 @@ namespace gos
                 {
                     if (ShowParameterDialog(types, out var selectedTypeId, out var value))
                     {
-                        await _citizenController.AddParameterAsync(selectedTypeId, value);
+                        await _citizenController.AddParameter(selectedTypeId, value);
                         parameters = await _citizenController.LoadParameters();
                         RefreshList();
                     }
@@ -164,7 +164,7 @@ namespace gos
 
                     if (ShowParameterDialog(types, out var newTypeId, out var newValue, param.TypeId, param.Value))
                     {
-                        await _citizenController.UpdateParameterAsync(param.Id, newTypeId, newValue);
+                        await _citizenController.UpdateParameter(param.Id, newTypeId, newValue);
                         parameters = await _citizenController.LoadParameters();
                         RefreshList();
                     }
@@ -179,7 +179,7 @@ namespace gos
 
                     if (MessageBox.Show("Удалить параметр?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
-                        await _citizenController.DeleteParameterAsync(param.Id);
+                        await _citizenController.DeleteParameter(param.Id);
                         parameters = await _citizenController.LoadParameters();
                         RefreshList();
                     }
@@ -350,7 +350,7 @@ namespace gos
 
                     if (missingTypeIds.Any())
                     {
-                        var allTypes = await _citizenController.LoadParameterTypesAsync();
+                        var allTypes = await _citizenController.LoadParameterTypes();
                         var missingTypes = allTypes
                             .Where(t => missingTypeIds.Contains(t.Id))
                             .Select(t => $"• {t.Name}")
@@ -375,7 +375,7 @@ namespace gos
 
                     await _citizenController.CreateNewApplication(_currentUser.Id, application);
                     MessageBox.Show("Заявление успешно создано.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    await LoadUserApplicationsAsync();
+                    await LoadUserApplications();
 
                     paramForm.DialogResult = DialogResult.OK;
                     paramForm.Close();
@@ -385,7 +385,7 @@ namespace gos
             }
         }
 
-        private async Task LoadUserApplicationsAsync()
+        private async Task LoadUserApplications()
         {
             try
             {
@@ -441,7 +441,7 @@ namespace gos
                 await _citizenController.CancelMyApplication(applicationId);
 
                 // Обновляем таблицу после удаления
-                await LoadUserApplicationsAsync();
+                await LoadUserApplications();
 
                 MessageBox.Show("Заявление успешно удалено.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }

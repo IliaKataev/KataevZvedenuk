@@ -10,7 +10,7 @@ namespace gos.services
 {
     public interface IUserService
     {
-        Task UpdateUserDataAsync(string fullName, string password);
+        Task UpdateUserData(string fullName, string password);
     }
 
     public class UserService : IUserService
@@ -24,7 +24,7 @@ namespace gos.services
             _authSession = authSession;
         }
 
-        public async Task UpdateUserDataAsync(string fullName, string password)
+        public async Task UpdateUserData(string fullName, string password)
         {
             var user = _authSession.CurrentUser ?? throw new UnauthorizedAccessException("User not authenticated.");
 
@@ -37,7 +37,7 @@ namespace gos.services
                 user.Password = password;
             }
 
-            await _userRepository.UpdateAsync(user); 
+            await _userRepository.Update(user); 
         }
     }
 

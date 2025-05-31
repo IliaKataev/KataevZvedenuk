@@ -11,8 +11,8 @@ namespace gos.services
 {
     public interface IAuthService
     {
-        Task<User?> TryLoginAsync(string login, string password);
-        Task<User> GetCurrentUserAsync();
+        Task<User?> TryLogin(string login, string password);
+        Task<User> GetCurrentUser();
         void Logout();
     }
 
@@ -27,9 +27,9 @@ namespace gos.services
             _authSession = authSession;
         }
 
-        public async Task<User?> TryLoginAsync(string login, string password)
+        public async Task<User?> TryLogin(string login, string password)
         {
-            var user = await _userRepository.GetByLoginAsync(login);
+            var user = await _userRepository.GetByLogin(login);
 
             // Если пароль совпадает — авторизация успешна
             if (user != null && user.Password == password)
@@ -41,14 +41,14 @@ namespace gos.services
             return null;
         }
 
-        public async Task<User> GetCurrentUserAsync()
+        public async Task<User> GetCurrentUser()
         {
             var user = _authSession.CurrentUser;
 
             if (user == null)
                 throw new UnauthorizedAccessException("Пользователь не авторизован.");
 
-            var updatedUser = await _userRepository.GetByIdAsync(user.Id);
+            var updatedUser = await _userRepository.GetById(user.Id);
             return updatedUser ?? throw new Exception("Пользователь не найден в базе данных.");
         }
 

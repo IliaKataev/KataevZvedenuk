@@ -10,13 +10,13 @@ namespace gos.repositories
 {
     public interface IApplicationRepository
     {
-        Task<List<models.Application>> GetByUserIdAsync(int userId);
-        Task<models.Application?> GetByIdAsync(int applicationId);
-        Task<List<models.Application>> GetAllAsync();
-        Task<List<models.Application>> GetByStatusAsync(ApplicationStatus status);
-        Task AddAsync(models.Application app);
-        Task UpdateAsync(models.Application app);
-        Task DeleteAsync(int appId);
+        Task<List<models.Application>> GetByUserId(int userId);
+        Task<models.Application?> GetById(int applicationId);
+        Task<List<models.Application>> GetAll();
+        Task<List<models.Application>> GetByStatus(ApplicationStatus status);
+        Task Add(models.Application app);
+        Task Update(models.Application app);
+        Task Delete(int appId);
     }
 
     public class ApplicationRepository : IApplicationRepository
@@ -28,7 +28,7 @@ namespace gos.repositories
             _context = context;
         }
 
-        public async Task<List<models.Application>> GetByUserIdAsync(int userId)
+        public async Task<List<models.Application>> GetByUserId(int userId)
         {
             return await _context.Applications
                 .Include(a => a.Service)
@@ -37,7 +37,7 @@ namespace gos.repositories
                 .ToListAsync();
         }
 
-        public async Task<models.Application?> GetByIdAsync(int applicationId)
+        public async Task<models.Application?> GetById(int applicationId)
         {
             return await _context.Applications
                 .Include(a => a.Service)
@@ -45,7 +45,7 @@ namespace gos.repositories
                 .FirstOrDefaultAsync(a => a.Id == applicationId);
         }
 
-        public async Task<List<models.Application>> GetAllAsync()
+        public async Task<List<models.Application>> GetAll()
         {
             return await _context.Applications
                 .Include(a => a.Service)
@@ -53,7 +53,7 @@ namespace gos.repositories
                 .ToListAsync();
         }
 
-        public async Task<List<models.Application>> GetByStatusAsync(ApplicationStatus status)
+        public async Task<List<models.Application>> GetByStatus(ApplicationStatus status)
         {
             return await _context.Applications
                 .Include(a => a.Service)
@@ -62,19 +62,19 @@ namespace gos.repositories
                 .ToListAsync();
         }
 
-        public async Task AddAsync(models.Application app)
+        public async Task Add(models.Application app)
         {
             await _context.Applications.AddAsync(app);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(models.Application app)
+        public async Task Update(models.Application app)
         {
             _context.Applications.Update(app);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int appId)
+        public async Task Delete(int appId)
         {
             var app = await _context.Applications.FindAsync(appId);
             if (app != null)

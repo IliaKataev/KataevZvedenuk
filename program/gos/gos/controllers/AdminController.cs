@@ -24,7 +24,7 @@ namespace gos.controllers
 
         public async Task CreateNewUser(string fullName, string login, string password, UserRole role)
         {
-            var user = _authService.GetCurrentUserAsync();
+            var user = _authService.GetCurrentUser();
             if (user == null)
                 throw new UnauthorizedAccessException("Пользователь не авторизован");
 
@@ -36,12 +36,12 @@ namespace gos.controllers
                 Role = role
             };
 
-            await _adminService.CreateUserAsync(_userDTO);
+            await _adminService.CreateUser(_userDTO);
         }
 
         public async Task CreateParameterType(string type, string name)
         {
-            var user = _authService.GetCurrentUserAsync();
+            var user = _authService.GetCurrentUser();
             if (user == null)
                 throw new UnauthorizedAccessException("Пользователь не авторизован");
 
@@ -51,18 +51,18 @@ namespace gos.controllers
                 Name = name
             };
 
-            await _adminService.CreateParameterTypeAsync(_parType);
+            await _adminService.CreateParameterType(_parType);
         }
 
-        public async Task<List<ParameterTypeDTO>> GetParameterTypesAsync()
+        public async Task<List<ParameterTypeDTO>> GetParameterTypes()
         {
             
-            return await _adminService.GetParameterTypesAsync();
+            return await _adminService.GetParameterTypes();
         }
 
-        public async Task ReplaceAllParameterTypesAsync(List<(string Name, string Type)> parameters)
+        public async Task ReplaceAllParameterTypes(List<(string Name, string Type)> parameters)
         {
-            var existingDtos = await _adminService.GetParameterTypesAsync();
+            var existingDtos = await _adminService.GetParameterTypes();
 
             var updatedDtos = parameters.Select((p, i) =>
             {
@@ -75,12 +75,12 @@ namespace gos.controllers
                 };
             }).ToList();
 
-            await _adminService.ReplaceAllParameterTypesAsync(updatedDtos);
+            await _adminService.ReplaceAllParameterTypes(updatedDtos);
         }
 
-        public async Task ReplaceAllServicesAsync(List<ServiceDTO> servicesDTO)
+        public async Task ReplaceAllServices(List<ServiceDTO> servicesDTO)
         {
-            var existingDtos = await _adminService.GetAllServicesAsync();
+            var existingDtos = await _adminService.GetAllServices();
 
             var updatedDtos = servicesDTO.Select((p, i) =>
             {
@@ -95,42 +95,42 @@ namespace gos.controllers
                 };
             }).ToList();
 
-            await _adminService.ReplaceAllServicesAsync(updatedDtos);
+            await _adminService.ReplaceAllServices(updatedDtos);
         }
 
-        public async Task DeleteParameterTypeAsync(int id)
+        public async Task DeleteParameterType(int id)
         {
-            await _adminService.DeleteParameterTypeAsync(id);
+            await _adminService.DeleteParameterType(id);
         }
 
-        public async Task<List<ServiceDTO>> GetAllServicesAsync()
+        public async Task<List<ServiceDTO>> GetAllServices()
         {
-            return await _adminService.GetAllServicesAsync();
+            return await _adminService.GetAllServices();
         }
 
-        public async Task<List<RuleDTO>> GetRulesForServiceAsync(int serviceId)
+        public async Task<List<RuleDTO>> GetRulesForService(int serviceId)
         {
-            return await _adminService.GetRulesForServiceAsync(serviceId);
+            return await _adminService.GetRulesForService(serviceId);
         }
 
-        public async Task SaveServiceAsync(ServiceDTO serviceDto)
+        public async Task SaveService(ServiceDTO serviceDto)
         {
-            await _adminService.CreateServiceAsync(serviceDto);
+            await _adminService.CreateService(serviceDto);
         }
 
-        public async Task AddRuleAsync(RuleDTO ruleDTO)
+        public async Task AddRule(RuleDTO ruleDTO)
         {
-            await _adminService.AddRuleAsync(ruleDTO);
+            await _adminService.AddRule(ruleDTO);
         }
 
-        public async Task DeleteRuleAsync(int ruleId)
+        public async Task DeleteRule(int ruleId)
         {
-            await _adminService.DeleteRuleAsync(ruleId);
+            await _adminService.DeleteRule(ruleId);
         }
 
-        public async Task UpdateRuleAsync(RuleDTO ruleDTO)
+        public async Task UpdateRule(RuleDTO ruleDTO)
         {
-            await _adminService.UpdateRuleAsync(ruleDTO);
+            await _adminService.UpdateRule(ruleDTO);
         }
     }
 }

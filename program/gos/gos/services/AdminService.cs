@@ -11,19 +11,19 @@ namespace gos.services
 {
     public interface IAdminService
     {
-        Task<List<ServiceDTO>> GetAllServicesAsync();
-        Task<Service> CreateServiceAsync(ServiceDTO serviceDTO);
-        Task<Service> UpdateServiceAsync(ServiceDTO serviceDTO);
-        Task<List<RuleDTO>> GetRulesForServiceAsync(int serviceId);
-        Task AddRuleAsync(RuleDTO ruleDTO);
-        Task UpdateRuleAsync(RuleDTO ruleDTO);
-        Task DeleteRuleAsync(int ruleId);
-        Task<List<ParameterTypeDTO>> GetParameterTypesAsync();
-        Task<ParameterType> CreateParameterTypeAsync(ParameterTypeDTO parameterTypeDTO);
-        Task DeleteParameterTypeAsync(int typeId);
-        Task<User> CreateUserAsync(UserDTO userDTO);
-        Task ReplaceAllParameterTypesAsync(List<ParameterTypeDTO> updatedDtos);
-        Task ReplaceAllServicesAsync(List<ServiceDTO> updatedDtos);
+        Task<List<ServiceDTO>> GetAllServices();
+        Task<Service> CreateService(ServiceDTO serviceDTO);
+        Task<Service> UpdateService(ServiceDTO serviceDTO);
+        Task<List<RuleDTO>> GetRulesForService(int serviceId);
+        Task AddRule(RuleDTO ruleDTO);
+        Task UpdateRule(RuleDTO ruleDTO);
+        Task DeleteRule(int ruleId);
+        Task<List<ParameterTypeDTO>> GetParameterTypes();
+        Task<ParameterType> CreateParameterType(ParameterTypeDTO parameterTypeDTO);
+        Task DeleteParameterType(int typeId);
+        Task<User> CreateUser(UserDTO userDTO);
+        Task ReplaceAllParameterTypes(List<ParameterTypeDTO> updatedDtos);
+        Task ReplaceAllServices(List<ServiceDTO> updatedDtos);
 
     }
 
@@ -49,9 +49,9 @@ namespace gos.services
             _authSession = authSession;
         }
 
-        public async Task<List<ServiceDTO>> GetAllServicesAsync()
+        public async Task<List<ServiceDTO>> GetAllServices()
         {
-            var services = await _serviceRepository.GetAllAsync();
+            var services = await _serviceRepository.GetAll();
             return services
                 .Select(pt => new ServiceDTO
                 {
@@ -64,7 +64,7 @@ namespace gos.services
                 .ToList();
         }
 
-        public async Task<Service> CreateServiceAsync(ServiceDTO serviceDTO)
+        public async Task<Service> CreateService(ServiceDTO serviceDTO)
         {
             var service = new Service
             {
@@ -73,13 +73,13 @@ namespace gos.services
                 ActivationDate = serviceDTO.ActivationDate
             };
 
-            await _serviceRepository.AddAsync(service);
+            await _serviceRepository.Add(service);
             return service;
         }
 
-        public async Task<Service> UpdateServiceAsync(ServiceDTO serviceDTO)
+        public async Task<Service> UpdateService(ServiceDTO serviceDTO)
         {
-            var service = await _serviceRepository.GetByIdAsync(serviceDTO.Id);
+            var service = await _serviceRepository.GetById(serviceDTO.Id);
             if (service == null) throw new ArgumentException("Service not found.");
 
             service.Name = serviceDTO.Name;
@@ -87,13 +87,13 @@ namespace gos.services
             service.ActivationDate = serviceDTO.ActivationDate;
             service.DeactivationDate = serviceDTO.DeactivationDate;
 
-            await _serviceRepository.UpdateAsync(service);
+            await _serviceRepository.Update(service);
             return service;
         }
 
-        public async Task<List<RuleDTO>> GetRulesForServiceAsync(int serviceId)
+        public async Task<List<RuleDTO>> GetRulesForService(int serviceId)
         {
-            var rules = await _ruleRepository.GetByServiceIdAsync(serviceId);
+            var rules = await _ruleRepository.GetByServiceId(serviceId);
 
             return rules
                 .Select(pt => new RuleDTO
@@ -110,7 +110,7 @@ namespace gos.services
         }
 
 
-        public async Task AddRuleAsync(RuleDTO ruleDTO)
+        public async Task AddRule(RuleDTO ruleDTO)
         {
             var rule = new Rule
             {
@@ -121,12 +121,12 @@ namespace gos.services
                 DeadlineDays = ruleDTO.DeadlineDays
             };
 
-            await _ruleRepository.AddAsync(rule);
+            await _ruleRepository.Add(rule);
         }
 
-        public async Task UpdateRuleAsync(RuleDTO ruleDTO)
+        public async Task UpdateRule(RuleDTO ruleDTO)
         {
-            var rule = await _ruleRepository.GetByIdAsync(ruleDTO.Id);
+            var rule = await _ruleRepository.GetById(ruleDTO.Id);
             if (rule == null) throw new ArgumentException("Rule not found.");
 
             rule.Value = ruleDTO.Value;
@@ -134,17 +134,17 @@ namespace gos.services
             rule.NeededTypeId = ruleDTO.NeededTypeId;
             rule.DeadlineDays = ruleDTO.DeadlineDays;
 
-            await _ruleRepository.UpdateAsync(rule);
+            await _ruleRepository.Update(rule);
         }
 
-        public async Task DeleteRuleAsync(int ruleId)
+        public async Task DeleteRule(int ruleId)
         {
-            await _ruleRepository.DeleteAsync(ruleId);
+            await _ruleRepository.Delete(ruleId);
         }
 
-        public async Task<List<ParameterTypeDTO>> GetParameterTypesAsync()
+        public async Task<List<ParameterTypeDTO>> GetParameterTypes()
         {
-            var parameterTypes = await _parameterTypeRepository.GetAllAsync();
+            var parameterTypes = await _parameterTypeRepository.GetAll();
 
             return parameterTypes
                 .Select(pt => new ParameterTypeDTO
@@ -156,7 +156,7 @@ namespace gos.services
                 .ToList();
         }
 
-        public async Task<ParameterType> CreateParameterTypeAsync(ParameterTypeDTO parameterTypeDTO)
+        public async Task<ParameterType> CreateParameterType(ParameterTypeDTO parameterTypeDTO)
         {
             var parameterType = new ParameterType
             {
@@ -164,14 +164,14 @@ namespace gos.services
                 Name = parameterTypeDTO.Name
             };
 
-            await _parameterTypeRepository.AddAsync(parameterType);
+            await _parameterTypeRepository.Add(parameterType);
             return parameterType;
         }
 
-        public async Task ReplaceAllParameterTypesAsync(List<ParameterTypeDTO> updatedDtos)
+        public async Task ReplaceAllParameterTypes(List<ParameterTypeDTO> updatedDtos)
         {
             // Получаем все текущие типы из репозитория
-            var existingEntities = await _parameterTypeRepository.GetAllAsync();
+            var existingEntities = await _parameterTypeRepository.GetAll();
 
             //Обновляем и добавляем новые
             foreach (var dto in updatedDtos)
@@ -184,7 +184,7 @@ namespace gos.services
                         Name = dto.Name,
                         Type = dto.Type
                     };
-                    await _parameterTypeRepository.AddAsync(newEntity);
+                    await _parameterTypeRepository.Add(newEntity);
                 }
                 else
                 {
@@ -194,7 +194,7 @@ namespace gos.services
                     {
                         existing.Name = dto.Name;
                         existing.Type = dto.Type;
-                        await _parameterTypeRepository.UpdateAsync(existing);
+                        await _parameterTypeRepository.Update(existing);
                     }
                     else
                     {
@@ -204,7 +204,7 @@ namespace gos.services
                             Name = dto.Name,
                             Type = dto.Type
                         };
-                        await _parameterTypeRepository.AddAsync(newEntity);
+                        await _parameterTypeRepository.Add(newEntity);
                     }
                 }
             }
@@ -216,15 +216,15 @@ namespace gos.services
 
             foreach (var entityToDelete in toDelete)
             {
-                await _parameterTypeRepository.DeleteAsync(entityToDelete.Id);
+                await _parameterTypeRepository.Delete(entityToDelete.Id);
             }
         }
 
 
 
-        public async Task ReplaceAllServicesAsync(List<ServiceDTO> updatedDtos)
+        public async Task ReplaceAllServices(List<ServiceDTO> updatedDtos)
         {
-            var existingEntities = await _serviceRepository.GetAllAsync();
+            var existingEntities = await _serviceRepository.GetAll();
 
             foreach (var dto in updatedDtos)
             {
@@ -238,7 +238,7 @@ namespace gos.services
                         ActivationDate = dto.ActivationDate,
                         DeactivationDate = dto.DeactivationDate
                     };
-                    await _serviceRepository.AddAsync(newEntity);
+                    await _serviceRepository.Add(newEntity);
                 }
                 else
                 {
@@ -250,7 +250,7 @@ namespace gos.services
                         existing.Description = dto.Description;
                         existing.DeactivationDate = dto.DeactivationDate;
 
-                        await _serviceRepository.UpdateAsync(existing);
+                        await _serviceRepository.Update(existing);
                     }
                     else
                     {
@@ -261,19 +261,19 @@ namespace gos.services
                             ActivationDate = dto.ActivationDate,
                             DeactivationDate = dto.DeactivationDate
                         };
-                        await _serviceRepository.AddAsync(newEntity);
+                        await _serviceRepository.Add(newEntity);
                     }
                 }
             }        
         }
 
 
-        public async Task DeleteParameterTypeAsync(int typeId)
+        public async Task DeleteParameterType(int typeId)
         {
-            await _parameterTypeRepository.DeleteAsync(typeId);
+            await _parameterTypeRepository.Delete(typeId);
         }
 
-        public async Task<User> CreateUserAsync(UserDTO userDTO)
+        public async Task<User> CreateUser(UserDTO userDTO)
         {
             var user = new User
             {
@@ -283,7 +283,7 @@ namespace gos.services
                 Role = userDTO.Role
             };
 
-            await _userRepository.AddAsync(user);
+            await _userRepository.Add(user);
             return user;
         }
     }

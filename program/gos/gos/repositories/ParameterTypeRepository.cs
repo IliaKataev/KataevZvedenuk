@@ -10,12 +10,12 @@ namespace gos.repositories
 {
     public interface IParameterTypeRepository
     {
-        Task<List<ParameterType>> GetAllAsync();
-        Task<ParameterType?> GetByIdAsync(int id);
-        Task AddAsync(ParameterType type);
-        Task UpdateAsync(ParameterType type);
-        Task DeleteAsync(int id);
-        Task<List<ParameterType>> GetByServiceIdAsync(int serviceId);
+        Task<List<ParameterType>> GetAll();
+        Task<ParameterType?> GetById(int id);
+        Task Add(ParameterType type);
+        Task Update(ParameterType type);
+        Task Delete(int id);
+        Task<List<ParameterType>> GetByServiceId(int serviceId);
     }
 
     public class ParameterTypeRepository : IParameterTypeRepository
@@ -27,7 +27,7 @@ namespace gos.repositories
             _context = context;
         }
 
-        public async Task<List<ParameterType>> GetAllAsync()
+        public async Task<List<ParameterType>> GetAll()
         {
             return await _context.ParameterTypes
                 .Include(pt => pt.Parameters)
@@ -35,7 +35,7 @@ namespace gos.repositories
                 .ToListAsync();
         }
 
-        public async Task<ParameterType?> GetByIdAsync(int id)
+        public async Task<ParameterType?> GetById(int id)
         {
             return await _context.ParameterTypes
                 .Include(pt => pt.Parameters)
@@ -43,19 +43,19 @@ namespace gos.repositories
                 .FirstOrDefaultAsync(pt => pt.Id == id);
         }
 
-        public async Task AddAsync(ParameterType type)
+        public async Task Add(ParameterType type)
         {
             await _context.ParameterTypes.AddAsync(type);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(ParameterType type)
+        public async Task Update(ParameterType type)
         {
             _context.ParameterTypes.Update(type);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task Delete(int id)
         {
             var parameterType = await _context.ParameterTypes.FindAsync(id);
             if (parameterType != null)
@@ -64,7 +64,7 @@ namespace gos.repositories
                 await _context.SaveChangesAsync();
             }
         }
-        public async Task<List<ParameterType>> GetByServiceIdAsync(int serviceId)
+        public async Task<List<ParameterType>> GetByServiceId(int serviceId)
         {
             return await _context.ParameterTypes
                 .Where(pt => pt.Rules.Any(r => r.ServiceId == serviceId)) 

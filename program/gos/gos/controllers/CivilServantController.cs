@@ -22,22 +22,22 @@ namespace gos.controllers
 
         public async Task<List<ApplicationDTO>> LoadApplications()
         {
-            return await _civilServantService.GetMyApplicationsAsync();
+            return await _civilServantService.GetMyApplications();
         }
 
         public async Task<List<ServiceDTO>> LoadAvailableServices()
         {
-            return await _civilServantService.GetAvailableServicesAsync();
+            return await _civilServantService.GetAvailableServices();
         }
 
         public async Task UpdateApplicationResult(ApplicationDTO application)
         {
-            await _civilServantService.ChangeStatusAsync(application);
+            await _civilServantService.ChangeStatus(application);
         }
 
         public async Task<ApplicationDTO> ProcessApplication(ApplicationDTO applicationDTO)
         {
-            return await _applicationService.ProcessApplicationAsync(applicationDTO.ApplicationId, applicationDTO.ServiceId);
+            return await _applicationService.ProcessApplication(applicationDTO.ApplicationId, applicationDTO.ServiceId);
         }
     }
 }

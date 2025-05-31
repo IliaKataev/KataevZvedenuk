@@ -30,7 +30,7 @@ namespace gos
         private async void CivilServantForm_Load(object sender, EventArgs e)
         {
             labelWelcome.Text = $"Добро пожаловать, {_currentUser.FullName}!";
-            await LoadApplicationsAsync();
+            await LoadApplications();
         }
 
         private void CivilServantForm_Closed(object sender, FormClosedEventArgs e)
@@ -39,7 +39,7 @@ namespace gos
         }
 
 
-        private async Task LoadApplicationsAsync()
+        private async Task LoadApplications()
         {
             try
             {
@@ -171,7 +171,7 @@ namespace gos
                                          $"Результат: {application.Result ?? "—"}\n" +
                                          $"Закрыто: {application.ClosureDate.Value.ToString("dd.MM.yyyy")}";
                     }
-                    applications = await RefreshApplicationsAsync(serviceMap);
+                    applications = await RefreshApplications(serviceMap);
                 };
 
                 buttonProcess.Click += async (_, __) =>
@@ -203,7 +203,7 @@ namespace gos
                                          $"Результат: {application.Result ?? "—"}\n" +
                                          $"Закрыто: {(application.ClosureDate.HasValue ? application.ClosureDate.Value.ToString("dd.MM.yyyy") : "—")}";
                         MessageBox.Show(application.ClosureDate.Value.ToString("dd.MM.yyyy"));
-                        applications = await RefreshApplicationsAsync(serviceMap);
+                        applications = await RefreshApplications(serviceMap);
 
                     }
                     catch (Exception ex)
@@ -254,7 +254,7 @@ namespace gos
                         await _controller.UpdateApplicationResult(application);
 
                         // обновляем список
-                        applications = await RefreshApplicationsAsync(serviceMap);
+                        applications = await RefreshApplications(serviceMap);
 
                         processForm.DialogResult = DialogResult.OK;
                         processForm.Close();
@@ -273,12 +273,12 @@ namespace gos
 
                 if (processForm.ShowDialog() == DialogResult.OK)
                 {
-                    await LoadApplicationsAsync(); // обновить таблицу после сохранения
+                    await LoadApplications(); // обновить таблицу после сохранения
                 }
             }
         }
 
-        private async Task<List<ApplicationDTO>> RefreshApplicationsAsync(Dictionary<int, string> serviceMap)
+        private async Task<List<ApplicationDTO>> RefreshApplications(Dictionary<int, string> serviceMap)
         {
             var applications = (await _controller.LoadApplications()).ToList();
 

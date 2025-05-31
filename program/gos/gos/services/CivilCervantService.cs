@@ -13,11 +13,11 @@ namespace gos.services
     public interface ICivilServantService
     {
         //bool IsCivilServant();
-        Task<List<ApplicationDTO>> GetMyApplicationsAsync();
-        Task<models.Application?> GetApplicationDetailsAsync(int applicationId);
-        Task ChangeStatusAsync(ApplicationDTO application);
-        Task ProcessApplicationAsync(int applicationId, string result);
-        Task<List<ServiceDTO>> GetAvailableServicesAsync();
+        Task<List<ApplicationDTO>> GetMyApplications();
+        Task<models.Application?> GetApplicationDetails(int applicationId);
+        Task ChangeStatus(ApplicationDTO application);
+        Task ProcessApplication(int applicationId, string result);
+        Task<List<ServiceDTO>> GetAvailableServices();
     }
 
     public class CivilServantService : ICivilServantService
@@ -35,10 +35,10 @@ namespace gos.services
 
 
 
-        public async Task<List<ApplicationDTO>> GetMyApplicationsAsync() //тут должны возвращаться DTOшки
+        public async Task<List<ApplicationDTO>> GetMyApplications() //тут должны возвращаться DTOшки
         {
             var user = _authSession.CurrentUser ?? throw new UnauthorizedAccessException();
-            var apps = await _applicationRepository.GetAllAsync();
+            var apps = await _applicationRepository.GetAll();
             return apps
                 .Select(a => new ApplicationDTO
             {
@@ -52,9 +52,9 @@ namespace gos.services
                 ClosureDate = a.ClosureDate,
             }).ToList();
         }
-        public async Task<List<ServiceDTO>> GetAvailableServicesAsync()
+        public async Task<List<ServiceDTO>> GetAvailableServices()
         {
-            var allServices = await _serviceRepository.GetAllAsync();
+            var allServices = await _serviceRepository.GetAll();
 
             var availableServices = allServices
                 .Where(service => service.DeactivationDate == null)
@@ -72,14 +72,14 @@ namespace gos.services
         }
 
 
-        public async Task<models.Application?> GetApplicationDetailsAsync(int applicationId)
+        public async Task<models.Application?> GetApplicationDetails(int applicationId)
         {
-            return await _applicationRepository.GetByIdAsync(applicationId);
+            return await _applicationRepository.GetById(applicationId);
         }
 
-        public async Task ChangeStatusAsync(ApplicationDTO application)
+        public async Task ChangeStatus(ApplicationDTO application)
         {
-            var existingApp = await _applicationRepository.GetByIdAsync(application.ApplicationId);
+            var existingApp = await _applicationRepository.GetById(application.ApplicationId);
             if (existingApp == null)
                 throw new ArgumentException("Заявление не найдено");
 
@@ -89,19 +89,19 @@ namespace gos.services
             existingApp.ClosureDate = DateTime.Now;
 
             // Сохраняем
-            await _applicationRepository.UpdateAsync(existingApp);
+            await _applicationRepository.Update(existingApp);
         }
 
 
-        public async Task ProcessApplicationAsync(int applicationId, string result)
+        public async Task ProcessApplication(int applicationId, string result)
         {
-            var app = await _applicationRepository.GetByIdAsync(applicationId);
+            var app = await _applicationRepository.GetById(applicationId);
             if (app == null) throw new ArgumentException("Заявление не найдено");
 
             app.Result = result;
             app.ClosureDate = DateTime.Now;
 
-            await _applicationRepository.UpdateAsync(app);
+            await _applicationRepository.Update(app);
         }
     }
 }

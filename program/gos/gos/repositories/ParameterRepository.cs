@@ -11,10 +11,10 @@ namespace gos.repositories
 
     public interface IParameterRepository
     {
-        Task<Parameter?> GetByIdAsync(int parameterId);
-        Task AddAsync(Parameter parameter);
-        Task UpdateAsync(Parameter parameter);
-        Task DeleteAsync(int parameterId);
+        Task<Parameter?> GetById(int parameterId);
+        Task Add(Parameter parameter);
+        Task Update(Parameter parameter);
+        Task Delete(int parameterId);
     }
 
 
@@ -27,7 +27,7 @@ namespace gos.repositories
             _context = context;
         }
 
-        public async Task<Parameter?> GetByIdAsync(int parameterId)
+        public async Task<Parameter?> GetById(int parameterId)
         {
             return await _context.Parameters
                 .Include(p => p.Type)
@@ -35,19 +35,19 @@ namespace gos.repositories
                 .FirstOrDefaultAsync(p => p.Id == parameterId);
         }
 
-        public async Task AddAsync(Parameter parameter)
+        public async Task Add(Parameter parameter)
         {
             await _context.Parameters.AddAsync(parameter);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Parameter parameter)
+        public async Task Update(Parameter parameter)
         {
             _context.Parameters.Update(parameter);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int parameterId)
+        public async Task Delete(int parameterId)
         {
             var parameter = await _context.Parameters.FindAsync(parameterId);
             if (parameter != null)

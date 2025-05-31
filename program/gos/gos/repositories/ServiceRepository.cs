@@ -10,10 +10,10 @@ namespace gos.repositories
 {
     public interface IServiceRepository
     {
-        Task<List<Service>> GetAllAsync();
-        Task<Service?> GetByIdAsync(int id);
-        Task AddAsync(Service service);
-        Task UpdateAsync(Service service);
+        Task<List<Service>> GetAll();
+        Task<Service?> GetById(int id);
+        Task Add(Service service);
+        Task Update(Service service);
     }
 
     public class ServiceRepository : IServiceRepository
@@ -25,7 +25,7 @@ namespace gos.repositories
             _context = context;
         }
 
-        public async Task<List<Service>> GetAllAsync()
+        public async Task<List<Service>> GetAll()
         {
             return await _context.Services
                 .Include(s => s.Applications)
@@ -33,7 +33,7 @@ namespace gos.repositories
                 .ToListAsync();
         }
 
-        public async Task<Service?> GetByIdAsync(int id)
+        public async Task<Service?> GetById(int id)
         {
             return await _context.Services
                 .Include(s => s.Applications)
@@ -41,13 +41,13 @@ namespace gos.repositories
                 .FirstOrDefaultAsync(s => s.Id == id);
         }
 
-        public async Task AddAsync(Service service)
+        public async Task Add(Service service)
         {
             await _context.Services.AddAsync(service);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(Service service)
+        public async Task Update(Service service)
         {
             _context.Services.Update(service);
             await _context.SaveChangesAsync();

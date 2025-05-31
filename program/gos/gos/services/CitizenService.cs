@@ -13,15 +13,15 @@ namespace gos.services
     public interface ICitizenService
     {
         string GetPersonalData();
-        Task<List<Parameter>> GetParametersAsync();
-        Task<Parameter> AddParameterAsync(ParameterDTO parameterDTO);
-        Task UpdateParameterAsync(int parameterId, ParameterDTO parameterDTO);
-        Task DeleteParameterAsync(int parameterId);
-        Task<List<ApplicationDTO>> GetMyApplicationsAsync();
-        Task CancelApplicationAsync(int applicationId);
-        Task<List<ServiceDTO>> GetAvailableServicesAsync();
-        Task<List<ParameterTypeDTO>> GetServiceRequirementsAsync(int serviceId);
-        Task<List<ParameterType>> GetParameterTypesAsync();
+        Task<List<Parameter>> GetParameters();
+        Task<Parameter> AddParameter(ParameterDTO parameterDTO);
+        Task UpdateParameter(int parameterId, ParameterDTO parameterDTO);
+        Task DeleteParameter(int parameterId);
+        Task<List<ApplicationDTO>> GetMyApplications();
+        Task CancelApplication(int applicationId);
+        Task<List<ServiceDTO>> GetAvailableServices();
+        Task<List<ParameterTypeDTO>> GetServiceRequirements(int serviceId);
+        Task<List<ParameterType>> GetParameterTypes();
 
 
     }
@@ -59,19 +59,19 @@ namespace gos.services
             return $"Имя: {user.FullName}, Логин: {user.Login}";
         }
 
-        public async Task<List<ParameterType>> GetParameterTypesAsync()
+        public async Task<List<ParameterType>> GetParameterTypes()
         {
-            return await _parameterTypeRepository.GetAllAsync();
+            return await _parameterTypeRepository.GetAll();
         }
 
 
-        public async Task<List<Parameter>> GetParametersAsync()
+        public async Task<List<Parameter>> GetParameters()
         {
             var user = _authSession.CurrentUser ?? throw new UnauthorizedAccessException();
-            return await _userRepository.GetParametersAsync(user.Id);
+            return await _userRepository.GetParameters(user.Id);
         }
 
-        public async Task<Parameter> AddParameterAsync(ParameterDTO parameterDTO)
+        public async Task<Parameter> AddParameter(ParameterDTO parameterDTO)
         {
             var user = _authSession.CurrentUser ?? throw new UnauthorizedAccessException();
 
@@ -82,30 +82,30 @@ namespace gos.services
                 UserId = user.Id,
             };
 
-            await _parameterRepository.AddAsync(param);
+            await _parameterRepository.Add(param);
             return param;
         }
 
-        public async Task UpdateParameterAsync(int parameterId, ParameterDTO parameterDTO)
+        public async Task UpdateParameter(int parameterId, ParameterDTO parameterDTO)
         {
-            var parameter = await _parameterRepository.GetByIdAsync(parameterId)
+            var parameter = await _parameterRepository.GetById(parameterId)
                 ?? throw new ArgumentException("Параметр не найден");
 
             parameter.TypeId = parameterDTO.TypeId;
             parameter.Value = parameterDTO.Value;
 
-            await _parameterRepository.UpdateAsync(parameter);
+            await _parameterRepository.Update(parameter);
         }
 
-        public async Task DeleteParameterAsync(int parameterId)
+        public async Task DeleteParameter(int parameterId)
         {
-            await _parameterRepository.DeleteAsync(parameterId);
+            await _parameterRepository.Delete(parameterId);
         }
 
-        public async Task<List<ApplicationDTO>> GetMyApplicationsAsync() //тут должны возвращаться DTOшки
+        public async Task<List<ApplicationDTO>> GetMyApplications() //тут должны возвращаться DTOшки
         {
             var user = _authSession.CurrentUser ?? throw new UnauthorizedAccessException();
-            var apps = await _applicationRepository.GetByUserIdAsync(user.Id);
+            var apps = await _applicationRepository.GetByUserId(user.Id);
             return apps.Select(a => new ApplicationDTO
             {
                 ApplicationId = a.Id,
@@ -118,20 +118,20 @@ namespace gos.services
             }).ToList();
         }
 
-        public async Task CancelApplicationAsync(int applicationId)
+        public async Task CancelApplication(int applicationId)
         {
-            var app = await _applicationRepository.GetByIdAsync(applicationId)
+            var app = await _applicationRepository.GetById(applicationId)
                 ?? throw new ArgumentException("Заявление не найдено");
 
             if (app.ClosureDate != null)
                 throw new InvalidOperationException("Нельзя отменить закрытое заявление");
 
-            await _applicationRepository.DeleteAsync(applicationId);
+            await _applicationRepository.Delete(applicationId);
         }
 
-        public async Task<List<ServiceDTO>> GetAvailableServicesAsync()
+        public async Task<List<ServiceDTO>> GetAvailableServices()
         {
-            var allServices = await _serviceRepository.GetAllAsync();
+            var allServices = await _serviceRepository.GetAll();
 
             var availableServices = allServices
                 .Where(service => service.DeactivationDate == null)
@@ -148,9 +148,9 @@ namespace gos.services
             return availableServices;
         }
 
-        public async Task<List<ParameterTypeDTO>> GetServiceRequirementsAsync(int serviceId)
+        public async Task<List<ParameterTypeDTO>> GetServiceRequirements(int serviceId)
         {
-            var parameterTypes = await _parameterTypeRepository.GetByServiceIdAsync(serviceId);
+            var parameterTypes = await _parameterTypeRepository.GetByServiceId(serviceId);
 
             var dtoList = parameterTypes.Select(pt => new ParameterTypeDTO
             {

@@ -19,17 +19,17 @@ namespace gos.repositories
             _dbSet = context.Set<T>();
         }
 
-        public async Task<List<T>> GetAllAsync() => await _dbSet.ToListAsync();
+        public async Task<List<T>> GetAll() => await _dbSet.ToListAsync();
 
-        public async Task<T?> GetByIdAsync(int id) => await _dbSet.FindAsync(id);
+        public async Task<T?> GetById(int id) => await _dbSet.FindAsync(id);
 
-        public async Task AddAsync(T entity) => await _dbSet.AddAsync(entity);
+        public async Task Add(T entity) => await _dbSet.AddAsync(entity);
 
-        public async Task UpdateAsync(T entity) => _dbSet.Update(entity);
+        public async Task Update(T entity) => _dbSet.Update(entity);
 
-        public async Task DeleteAsync(T entity) => _dbSet.Remove(entity);
+        public async Task Delete(T entity) => _dbSet.Remove(entity);
 
-        public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
+        public async Task SaveChanges() => await _context.SaveChangesAsync();
     }
 
 }

@@ -157,7 +157,7 @@ namespace gos
                 editForm.Controls.AddRange(new Control[] { listBoxTP, lblName, txtName, lblType, txtType, btnAdd, btnUpdate, btnDelete, btnSave, btnCancelType });
 
                 // Получаем DTO из контроллера
-                var dtos = (await _adminController.GetParameterTypesAsync()).ToList();
+                var dtos = (await _adminController.GetParameterTypes()).ToList();
 
                 // Создаем список с Name и Type
                 List<(string Name, string Type)> parameters = dtos
@@ -280,7 +280,7 @@ namespace gos
         {
             try
             {
-                await _adminController.ReplaceAllParameterTypesAsync(parameters);
+                await _adminController.ReplaceAllParameterTypes(parameters);
                 MessageBox.Show("Список успешно обновлён.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
@@ -362,11 +362,11 @@ namespace gos
                     labelDeadlineDays, textBoxDeadlineDays
                 });
 
-                var parameterTypes = (await _adminController.GetParameterTypesAsync()).ToList();
+                var parameterTypes = (await _adminController.GetParameterTypes()).ToList();
                 comboBoxParameterTypes.DataSource = parameterTypes;
 
 
-                var services = (await _adminController.GetAllServicesAsync()).ToList();
+                var services = (await _adminController.GetAllServices()).ToList();
 
                 listBoxServices.Items.AddRange(services
                     .Select(s => s.DeactivationDate.HasValue
@@ -383,7 +383,7 @@ namespace gos
                     if (listBoxServices.SelectedIndex >= 0)
                     {
                         int selectedServiceId = services[listBoxServices.SelectedIndex].Id;
-                        var rules = (await _adminController.GetRulesForServiceAsync(selectedServiceId)).ToList();
+                        var rules = (await _adminController.GetRulesForService(selectedServiceId)).ToList();
 
                         foreach (var r in rules)
                         {
@@ -400,7 +400,7 @@ namespace gos
                 async Task RefreshServices()
                 {
                     listBoxServices.Items.Clear();
-                    services = (await _adminController.GetAllServicesAsync()).ToList();
+                    services = (await _adminController.GetAllServices()).ToList();
 
                     listBoxServices.Items.AddRange(services
                         .Select(s => s.DeactivationDate.HasValue
@@ -483,7 +483,7 @@ namespace gos
 
                     listBoxServices.Items.Add(newService.Name);
 
-                    await _adminController.ReplaceAllServicesAsync(services);
+                    await _adminController.ReplaceAllServices(services);
 
                     await RefreshServices(); // обновляем список 
 
@@ -511,7 +511,7 @@ namespace gos
                         services[idx].Name = textBoxName.Text.Trim();
                         services[idx].Description = textBoxDesc.Text.Trim();
 
-                        await _adminController.ReplaceAllServicesAsync(services); 
+                        await _adminController.ReplaceAllServices(services); 
 
                         await RefreshServices();
 
@@ -540,7 +540,7 @@ namespace gos
                         textBoxName.Text += $" деактивирована: {services[idx].ToString()}";
                         MessageBox.Show("Услуга деактивирована");
 
-                        await _adminController.ReplaceAllServicesAsync(services);
+                        await _adminController.ReplaceAllServices(services);
                         await RefreshServices();
 
                         listBoxRules.Items.Clear();
@@ -612,7 +612,7 @@ namespace gos
                         var confirm = MessageBox.Show("Удалить выбранное правило?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                         if (confirm == DialogResult.Yes)
                         {
-                            await _adminController.DeleteRuleAsync(ruleToDelete.Id);
+                            await _adminController.DeleteRule(ruleToDelete.Id);
                             await RefreshRulesForSelectedService();
                         }
                     }
@@ -648,11 +648,11 @@ namespace gos
                     if (existingRule != null)
                     {
                         ruleDto.Id = existingRule.Id;
-                        await _adminController.UpdateRuleAsync(ruleDto);
+                        await _adminController.UpdateRule(ruleDto);
                     }
                     else
                     {
-                        await _adminController.AddRuleAsync(ruleDto);
+                        await _adminController.AddRule(ruleDto);
                     }
 
                     // Сброс формы
@@ -693,7 +693,7 @@ namespace gos
 
                 btnOk.Click += async (s, ev) =>
                 {
-                    await _adminController.ReplaceAllServicesAsync(services); 
+                    await _adminController.ReplaceAllServices(services); 
                 };
 
                 editForm.ShowDialog(this);

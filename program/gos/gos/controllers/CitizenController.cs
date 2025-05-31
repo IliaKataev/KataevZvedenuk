@@ -29,16 +29,16 @@ namespace gos.controllers
 
         public async Task UpdatePersonalData(string fullName, string password)
         {
-            var user = _authService.GetCurrentUserAsync();
+            var user = _authService.GetCurrentUser();
             if (user == null)
                 throw new UnauthorizedAccessException("Пользователь не авторизован");
 
-            await _userService.UpdateUserDataAsync(fullName, password);
+            await _userService.UpdateUserData(fullName, password);
         }
 
-        public async Task<List<ParameterTypeDTO>> LoadParameterTypesAsync()
+        public async Task<List<ParameterTypeDTO>> LoadParameterTypes()
         {
-            var types = await _citizenService.GetParameterTypesAsync();
+            var types = await _citizenService.GetParameterTypes();
             return types.Select(t => new ParameterTypeDTO
             {
                 Id = t.Id,
@@ -48,7 +48,7 @@ namespace gos.controllers
 
         public async Task<List<ParameterDTO>> LoadParameters()
         {
-            var parameters = await _citizenService.GetParametersAsync();
+            var parameters = await _citizenService.GetParameters();
             return parameters.Select(t => new ParameterDTO
             {
                 Id = t.Id,
@@ -57,47 +57,47 @@ namespace gos.controllers
 
             }).ToList();
         }
-        public async Task AddParameterAsync(int typeId, string value)
+        public async Task AddParameter(int typeId, string value)
         {
             var dto = new ParameterDTO
             {
                 TypeId = typeId,
                 Value = value
             };
-            await _citizenService.AddParameterAsync(dto);
+            await _citizenService.AddParameter(dto);
         }
-        public async Task UpdateParameterAsync(int parameterId, int typeId, string value)
+        public async Task UpdateParameter(int parameterId, int typeId, string value)
         {
             var dto = new ParameterDTO
             {
                 TypeId = typeId,
                 Value = value
             };
-            await _citizenService.UpdateParameterAsync(parameterId, dto);
+            await _citizenService.UpdateParameter(parameterId, dto);
         }
-        public async Task DeleteParameterAsync(int parameterId)
+        public async Task DeleteParameter(int parameterId)
         {
-            await _citizenService.DeleteParameterAsync(parameterId);
+            await _citizenService.DeleteParameter(parameterId);
         }
         public async Task<List<ServiceDTO>> LoadAvailableServices()
         {
-            return await _citizenService.GetAvailableServicesAsync();
+            return await _citizenService.GetAvailableServices();
         }
         public async Task<List<ParameterTypeDTO>> LoadServiceRequirements(int serviceId)
         {
-            return await _citizenService.GetServiceRequirementsAsync(serviceId);
+            return await _citizenService.GetServiceRequirements(serviceId);
         }
         public async Task CreateNewApplication(int userId, ApplicationDTO application)
         {
-            await _applicationService.CreateNewApplicationAsync(userId, application);
+            await _applicationService.CreateNewApplication(userId, application);
         }
         public async Task<List<ApplicationDTO>> ViewMyApplications()
         {
-            return await _citizenService.GetMyApplicationsAsync();
+            return await _citizenService.GetMyApplications();
         }
         public async Task CancelMyApplication(int applicationId)
         {
-            await _citizenService.CancelApplicationAsync(applicationId);
+            await _citizenService.CancelApplication(applicationId);
         }
     }
 }

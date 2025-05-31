@@ -21,7 +21,7 @@ namespace gos.controllers
 
         public async Task<UserDTO?> Login(string login, string password)
         {
-            var user = await _authService.TryLoginAsync(login, password);
+            var user = await _authService.TryLogin(login, password);
             if (user != null)
             {
                 _currentUser = user; 
